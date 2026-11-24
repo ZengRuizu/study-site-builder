@@ -1,0 +1,2212 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="lang-both">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sorting Algorithms · demo course</title>
+<!--
+  Sorting Algorithms · demo course — built with study-site-builder (engine + course content → one self-contained file).
+  Open by double-clicking; no internet needed. Do not hand-edit this file: edit the course
+  sources and rebuild (python scripts/build.py <course-folder>).
+-->
+<style>
+:root{
+  --bg:#f6f4f0; --panel:#ffffff; --panel2:#faf8f5; --ink:#1d1b18; --muted:#6d675e; --line:#e4ded3;
+  --accent:#8a1538; --accent-soft:#f6e7ec; --amber:#b9651d; --amber-soft:#fbf0e3;
+  --ok:#1f5fc8; --ok-soft:#e2ecfd; --bad:#d2361a; --bad-soft:#fde4dc; /* colour-blind safe: right = blue, wrong = red-orange */ --blue:#2d5f9a; --blue-soft:#e8f0fa;
+  --code-bg:#1f1e24; --code-ink:#e8e6e3;
+  --radius:12px; --shadow:0 1px 2px rgba(0,0,0,.04),0 4px 14px rgba(0,0,0,.05);
+  --sans:"Segoe UI","PingFang SC","Microsoft YaHei","Hiragino Sans GB","Noto Sans CJK SC",system-ui,-apple-system,sans-serif;
+  --mono:"JetBrains Mono","Cascadia Code",Consolas,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#16151a; --panel:#1f1e25; --panel2:#24232b; --ink:#ecebe8; --muted:#a39e95; --line:#34323b;
+    --accent:#e0698f; --accent-soft:#3a2230; --amber:#e7a160; --amber-soft:#3a2d1f;
+    --ok:#6aa6ff; --ok-soft:#18294a; --bad:#ff7b54; --bad-soft:#47221a; --blue:#7fb0ea; --blue-soft:#1e2b3d;
+    --code-bg:#121116; --shadow:none; }
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:16px;line-height:1.65}
+a{color:var(--accent)}
+/* ---------- language modes ---------- */
+html.lang-en .zh, html.lang-zh .en{display:none !important}
+html.lang-both p.zh, html.lang-both div.zh{color:var(--muted);border-left:3px solid var(--line);padding-left:10px;margin-top:-6px}
+html.lang-both span.zh{color:var(--muted);margin-left:.35em}
+html.lang-both li > span.zh, html.lang-both .opt span.zh, html.lang-both .qtext span.zh, html.lang-both .exp span.zh, html.lang-both td > span.zh, html.lang-both .card span.zh.blk{display:block;margin-left:0}
+html.lang-both h1 span.zh, html.lang-both h2 span.zh, html.lang-both h3 span.zh{font-size:.8em}
+/* ---------- layout ---------- */
+.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;padding:10px 18px;background:var(--panel);border-bottom:1px solid var(--line)}
+.top .brand{font-weight:700;letter-spacing:.2px;white-space:nowrap}
+.top .brand b{color:var(--accent)}
+.top .sp{flex:1}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.seg button{white-space:nowrap;border:0;background:transparent;color:var(--ink);padding:5px 12px;font:inherit;font-size:13px;cursor:pointer}
+.seg button.on{background:var(--accent);color:#fff}
+.menu-btn{display:none;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:4px 10px;font-size:18px;cursor:pointer}
+.wrap{display:flex;min-height:calc(100vh - 53px)}
+nav.side{width:290px;flex:none;border-right:1px solid var(--line);background:var(--panel2);padding:14px 10px 40px;position:sticky;top:53px;height:calc(100vh - 53px);overflow:auto}
+nav.side .grp{margin-bottom:6px}
+nav.side .ch{display:flex;align-items:center;gap:8px;width:100%;text-align:left;border:0;background:none;color:var(--ink);font:inherit;font-weight:650;padding:7px 10px;border-radius:8px;cursor:pointer}
+nav.side .ch:hover{background:var(--accent-soft)}
+nav.side .ch .num{display:inline-grid;place-items:center;min-width:34px;height:22px;border-radius:6px;background:var(--accent);color:#fff;font-size:12px;font-weight:700}
+nav.side .ch.soon .num{background:var(--muted)}
+nav.side .secs{margin:2px 0 6px 18px;border-left:2px solid var(--line);display:none}
+nav.side .grp.open .secs{display:block}
+nav.side .sec{display:flex;gap:6px;align-items:flex-start;padding:4px 10px;font-size:14px;color:var(--ink);text-decoration:none;border-radius:6px;margin-left:4px}
+nav.side .sec:hover{background:var(--accent-soft)}
+nav.side .sec.cur{background:var(--accent);color:#fff}
+nav.side .sec .tick{width:14px;flex:none;color:var(--ok)}
+nav.side .sec.cur .tick{color:#fff}
+nav.side .extra{margin-top:14px;border-top:1px solid var(--line);padding-top:10px}
+main{flex:1;min-width:0;padding:26px 34px 80px}
+.page{max-width:920px;margin:0 auto}
+.crumb{font-size:13px;color:var(--muted);margin-bottom:4px}
+h1{font-size:28px;line-height:1.3;margin:0 0 14px}
+h2{font-size:21px;margin:30px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:22px 0 8px}
+p{margin:8px 0}
+ul,ol{margin:6px 0 10px;padding-left:24px}
+li{margin:3px 0}
+code.i{font-family:var(--mono);font-size:.9em;background:var(--accent-soft);color:var(--accent);padding:1px 5px;border-radius:5px}
+.kbd{font-family:var(--mono);font-size:.85em;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:0 5px}
+/* ---------- boxes ---------- */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin:14px 0;box-shadow:var(--shadow)}
+.note,.warn,.tip,.exam{border-radius:10px;padding:10px 14px;margin:12px 0;border:1px solid}
+.note{background:var(--blue-soft);border-color:transparent}
+.tip{background:var(--ok-soft);border-color:transparent}
+.warn{background:var(--bad-soft);border-color:transparent}
+.exam{background:var(--amber-soft);border-color:transparent}
+.note b.h,.warn b.h,.tip b.h,.exam b.h{display:block;font-size:13px;letter-spacing:.3px;text-transform:uppercase;margin-bottom:2px}
+.exam b.h{color:var(--amber)} .warn b.h{color:var(--bad)} .tip b.h{color:var(--ok)} .note b.h{color:var(--blue)}
+table.t{border-collapse:collapse;width:100%;margin:10px 0;font-size:14.5px;background:var(--panel)}
+table.t th,table.t td{border:1px solid var(--line);padding:6px 9px;text-align:left;vertical-align:top}
+table.t th{background:var(--panel2);font-weight:650}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.grid2>*,.grid3>*{min-width:0}
+.vzgrid{display:grid;grid-template-columns:1.1fr 1fr;gap:14px}
+@media (max-width:900px){.vzgrid{grid-template-columns:1fr}}
+@media (max-width:800px){.grid2,.grid3{grid-template-columns:1fr}}
+.pill{display:inline-block;font-size:12px;padding:1px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-weight:600}
+/* ---------- code ---------- */
+pre.code{background:var(--code-bg);color:var(--code-ink);border-radius:10px;padding:12px 0;overflow:auto;font-family:var(--mono);font-size:13.5px;line-height:1.55;margin:10px 0}
+pre.code .l{display:block;padding:0 14px 0 0;white-space:pre}
+pre.code .l::before{content:attr(data-n);display:inline-block;width:2.6em;padding-right:.9em;text-align:right;color:#6b6873;user-select:none}
+pre.code .l.hl{background:rgba(255,200,80,.18);box-shadow:inset 3px 0 0 #f5b041}
+pre.code .l.click{cursor:pointer}
+pre.code .l.click:hover{background:rgba(255,255,255,.06)}
+.c-kw{color:#ff8fa3}.c-str{color:#a5d6a7}.c-com{color:#8a8794;font-style:italic}.c-num{color:#f6c177}.c-pre{color:#c4a7e7}.c-fn{color:#89c2ff}
+/* ---------- buttons/inputs ---------- */
+.btn{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:6px 12px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.sm{font-size:13px;padding:3px 9px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+input.in,select.in{font:inherit;font-size:14.5px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:6px 10px}
+input.in.mono{font-family:var(--mono)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}
+/* ---------- quiz ---------- */
+.qbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:10px 14px;border-radius:10px;background:var(--panel2);border:1px solid var(--line);margin:12px 0;font-size:14px}
+.q{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin:12px 0;box-shadow:var(--shadow)}
+.q.right{border-color:var(--ok)} .q.wrong{border:2px dashed var(--bad)}
+.q .qh{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted);margin-bottom:4px}
+.q .qh .no{font-weight:700;color:var(--accent)}
+.q .qtext{font-weight:550}
+.opts{display:grid;gap:7px;margin:10px 0 4px}
+.opt{display:flex;gap:10px;align-items:flex-start;text-align:left;font:inherit;font-size:15px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:9px;padding:8px 12px;cursor:pointer}
+.opt:hover{border-color:var(--accent)}
+.opt .k{flex:none;font-weight:700;color:var(--muted);width:1.3em}
+.opt.sel{border-color:var(--blue);background:var(--blue-soft)}
+.opt.good{border:2px solid var(--ok);background:var(--ok-soft)}.opt.good::after{content:'✓';margin-left:auto;padding-left:8px;color:var(--ok);font-weight:800}
+.opt.bad{border:2px dashed var(--bad);background:var(--bad-soft)}.opt.bad::after{content:'✗';margin-left:auto;padding-left:8px;color:var(--bad);font-weight:800}
+.opt code,.exp code{font-family:var(--mono);font-size:.92em}
+.fb{margin-top:8px;font-weight:650}
+details.rv{margin:10px 0;border:1px dashed var(--line);border-radius:10px;padding:5px 12px;font-size:14.5px}
+details.rv>summary{cursor:pointer;color:var(--muted);font-size:13.5px;list-style:none;user-select:none}
+details.rv>summary::-webkit-details-marker{display:none}
+details.rv>summary::before{content:'📎 ';}
+details.rv>summary::after{content:' ▸';}
+details.rv[open]>summary::after{content:' ▾';}
+details.rv[open]{background:var(--panel2);padding-bottom:10px}
+details.rv .rvb{margin-top:6px}
+details.rv table.t{font-size:14px}
+.q .xl{border:1px solid var(--line);background:var(--panel2);color:var(--muted);border-radius:6px;font-size:12px;padding:1px 7px;cursor:pointer}
+.q .xl:hover{border-color:var(--accent);color:var(--accent)}
+html.lang-both .q .xl{display:none}
+.q .dk{color:var(--muted)}
+html.lang-en .q.xlate :is(.qtext,.opt,.exp,.fb) span.zh, html.lang-zh .q.xlate :is(.qtext,.opt,.exp,.fb) span.en{display:block !important;color:var(--muted);font-size:.93em}
+.fb.ok{color:var(--ok)} .fb.no{color:var(--bad)}
+.exp{margin-top:6px;padding:10px 12px;border-radius:9px;background:var(--panel2);border:1px dashed var(--line);font-size:14.5px}
+/* ---------- widgets ---------- */
+.w{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin:16px 0;box-shadow:var(--shadow)}
+.w .wt{font-size:13px;font-weight:700;color:var(--accent);letter-spacing:.3px;text-transform:uppercase;margin-bottom:6px}
+.boxes{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-end;min-height:48px}
+.box{min-width:42px;height:42px;display:grid;place-items:center;border-radius:8px;border:2px solid var(--line);background:var(--panel2);font-family:var(--mono);font-weight:700;transition:all .25s}
+.box.a{border-color:var(--accent);background:var(--accent-soft)}
+.box.b{border-color:var(--amber);background:var(--amber-soft)}
+.box.g{border-color:var(--ok);background:var(--ok-soft)}
+.box.dim{opacity:.35}
+.box .ix{position:absolute}
+.log{font-family:var(--mono);font-size:13px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;max-height:260px;overflow:auto;white-space:pre-wrap}
+.msg{min-height:1.6em;font-size:14.5px;margin:6px 0}
+.navbtns{display:flex;justify-content:space-between;gap:10px;margin-top:40px;padding-top:16px;border-top:1px solid var(--line)}
+.done-row{display:flex;justify-content:center;margin-top:26px}
+.hero{background:linear-gradient(135deg,var(--accent) 0%,#5b0d26 100%);color:#fff;border-radius:16px;padding:26px 28px;margin-bottom:18px}
+.hero h1{color:#fff;margin:0 0 6px}
+html.lang-both .hero span.zh{color:#f3d6df}
+.chgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.chcard{display:block;text-decoration:none;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow)}
+.chcard:hover{border-color:var(--accent)}
+.chcard .n{font-size:12px;font-weight:700;color:var(--accent)}
+.chcard .bar{height:6px;border-radius:9px;background:var(--line);margin-top:10px;overflow:hidden}
+.chcard .bar i{display:block;height:100%;background:var(--ok)}
+.svgbox{overflow-x:auto}
+.svgbox svg{max-width:100%;height:auto}
+svg text{font-family:var(--sans)}
+/* bilingual SVG labels: sv-en / sv-zh / sv-both */
+html:not(.lang-en) .sv-en, html:not(.lang-zh) .sv-zh, html:not(.lang-both) .sv-both{display:none}
+/* ---------- visual helpers ---------- */
+.big-idea{display:flex;gap:14px;align-items:center;background:var(--accent-soft);border-radius:12px;padding:14px 18px;margin:12px 0;font-size:16.5px}
+.big-idea .ico{font-size:30px;flex:none}
+.vcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:12px 0}
+.vcard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow);min-width:0}
+.vcard .pic{display:flex;justify-content:center;align-items:center;min-height:110px;margin:4px 0 8px}
+.vcard .pic svg{max-width:100%;height:auto}
+.vcard h4{margin:0 0 4px;font-size:15.5px}
+.vcard .cap{font-size:14px;color:var(--ink)}
+.vcard.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.tag-ok{color:var(--ok);font-weight:700}.tag-no{color:var(--bad);font-weight:700}
+/* org-chart tree built from nested <ul> */
+.otree{overflow-x:auto;padding:6px 0 4px}
+.otree ul{position:relative;display:flex;justify-content:center;margin:0;padding:18px 0 0}
+.otree > ul{padding-top:0}
+.otree li{list-style:none;position:relative;padding:18px 5px 0;display:flex;flex-direction:column;align-items:center;margin:0}
+.otree li::before,.otree li::after{content:'';position:absolute;top:0;right:50%;width:50%;height:18px;border-top:2px solid var(--muted)}
+.otree li::after{right:auto;left:50%;border-left:2px solid var(--muted)}
+.otree li:only-child::before,.otree li:only-child::after{display:none}
+.otree li:only-child{padding-top:0}
+.otree li:first-child::before,.otree li:last-child::after{border:0 none}
+.otree li:last-child::before{border-right:2px solid var(--muted);border-radius:0 7px 0 0}
+.otree li:first-child::after{border-radius:7px 0 0 0}
+.otree ul ul::before{content:'';position:absolute;top:0;left:50%;height:18px;border-left:2px solid var(--muted)}
+.otree .nd{display:inline-block;border:2px solid var(--line);background:var(--panel);border-radius:10px;padding:6px 10px;font-size:14px;line-height:1.35;text-align:center;white-space:nowrap}
+.otree .nd.r{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+.otree .nd.g1{border-color:var(--blue);background:var(--blue-soft)}
+.otree .nd.g2{border-color:var(--ok);background:var(--ok-soft)}
+.otree .nd.g3{border-color:var(--amber);background:var(--amber-soft)}
+.otree .nd.leaf{cursor:pointer}
+.otree .nd.leaf:hover,.otree .nd.leaf.on{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.otree .nd small{display:block;color:var(--muted);font-size:11.5px}
+/* chain of nodes (linear structures) */
+.chain{display:flex;align-items:center;flex-wrap:nowrap;overflow-x:auto;padding:6px 2px;gap:0}
+.chain .nb{min-width:44px;height:42px;display:grid;place-items:center;border:2px solid var(--line);border-radius:9px;background:var(--panel2);font-family:var(--mono);font-weight:700;flex:none;transition:all .25s;position:relative}
+.chain .nb.new{border-color:var(--ok);background:var(--ok-soft);transform:scale(1.08)}
+.chain .nb.rm{cursor:pointer}
+.chain .nb.rm:hover{border-color:var(--bad);background:var(--bad-soft)}
+.chain .nb.lk{cursor:not-allowed}
+.chain .ar{color:var(--muted);font-size:15px;flex:none;width:14px;text-align:center}
+.chain .slot{flex:none;width:26px;height:42px;display:grid;place-items:center;border-radius:7px;font-size:13px;cursor:pointer;user-select:none}
+.chain .slot.ok{border:2px dashed var(--ok);color:var(--ok);background:transparent}
+.chain .slot.ok:hover{background:var(--ok-soft)}
+.chain .slot.no{border:2px dashed var(--line);color:var(--muted);opacity:.7}
+.chain .endl{font-size:11px;color:var(--muted);flex:none;padding:0 4px;text-align:center;line-height:1.2}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.shake{animation:shake .25s 2}
+.flow{display:flex;flex-direction:column;gap:8px}
+.flow .qbox{border:2px solid var(--blue);background:var(--blue-soft);border-radius:10px;padding:10px 14px;font-weight:600}
+.flow .ans{border:2px solid var(--ok);background:var(--ok-soft);border-radius:10px;padding:10px 14px}
+.flow .path{font-size:13px;color:var(--muted)}
+@media (max-width:900px){
+  .menu-btn{display:inline-block}
+  nav.side{position:fixed;left:0;top:53px;z-index:30;transform:translateX(-100%);transition:transform .2s;box-shadow:0 0 30px rgba(0,0,0,.2)}
+  body.menu nav.side{transform:none}
+  main{padding:18px 14px 70px}
+  .top .brand small{display:none}
+}
+@media (max-width:600px){table.t{display:block;overflow-x:auto;max-width:100%}}
+.hist{display:inline-flex;align-items:center;gap:3px;font-size:11.5px;color:var(--muted);margin-right:6px;white-space:nowrap}
+.hist i,.mast i{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--line)}
+.hist i.y,.mast i.y{background:var(--ok)}.hist i.n,.mast i.n{background:var(--bad)}
+.hist .hc{margin-left:4px}.hist.m .hc{color:var(--ok);font-weight:600}.hist.r .hc{color:var(--bad)}.hist.new{opacity:.7}
+.mast{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;color:var(--muted)}.mast i{margin-left:6px}
+.wrec{font-size:12px;font-weight:400;color:var(--muted)}
+@media (max-width:600px){.hist .ht{display:none}}
+.focus{border:1px solid var(--line);border-left:5px solid var(--accent);background:var(--panel2);border-radius:10px;padding:10px 14px;margin:6px 0 18px;font-size:14.5px}
+.focus.slim{padding:7px 12px;font-size:13.5px}
+.focus .stars,.t .stars{color:var(--amber);letter-spacing:1px}
+.focus .frow{display:flex;gap:10px;margin-top:6px}.focus .flab{flex:0 0 6.5em;color:var(--muted);font-size:13px}
+.focus .fsecs{display:flex;flex-wrap:wrap;gap:5px}
+.prio{display:inline-block;font-size:12.5px;border-radius:999px;padding:1px 9px;border:1px solid var(--line);text-decoration:none;color:inherit}
+.prio.must{background:color-mix(in srgb,var(--accent) 16%,transparent);border-color:var(--accent);font-weight:650}
+.prio.core{background:color-mix(in srgb,var(--ok) 12%,transparent)}
+.prio.low{opacity:.75}.prio.skip{opacity:.6;text-decoration:line-through}
+.sec.p-skip>span:last-child{opacity:.5;text-decoration:line-through}.sec.p-low>span:last-child{opacity:.75}.sec.p-must .tick{color:var(--amber)}
+.ch .hrs{margin-left:auto;font-size:11.5px;font-weight:600;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:0 7px;white-space:nowrap}
+.fbar{display:inline-block;width:70px;height:8px;background:var(--line);border-radius:4px;margin-right:6px;vertical-align:middle;overflow:hidden}.fbar i{display:block;height:100%;background:var(--accent)}
+@media (max-width:600px){.focus .frow{flex-direction:column;gap:2px}.focus .flab{flex:none}}
+@media (max-width:480px){.top .brand .mr{display:none}.glbtn .glt{display:none}.top{gap:8px;padding:10px 12px}}
+/* ---- glossary ---- */
+/* ---------- glossary: dotted words in English text show Chinese on hover / tap ---------- */
+.gl{border-bottom:1.5px dotted var(--amber);cursor:help}
+.gl:hover{background:var(--amber-soft)}
+html.nogl .gl{border-bottom:0;cursor:inherit;background:none}
+#gltip{position:fixed;z-index:60;display:none;background:#26252b;color:#fff;border-radius:8px;padding:6px 10px;font-size:14px;box-shadow:0 4px 18px rgba(0,0,0,.25);max-width:260px;pointer-events:none}
+#gltip small{display:block;color:#f5c97a;font-size:12px;margin-top:2px}
+.glbtn{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:4px 10px;font-size:13px;cursor:pointer;white-space:nowrap}
+.glbtn.on{border-color:var(--amber);background:var(--amber-soft)}
+/* ---- practice widgets ---- */
+/* ---------- practice widgets: bucket game, flashcards, code cloze ---------- */
+.bk-pool{display:flex;flex-wrap:wrap;gap:6px;min-height:46px;padding:8px;border:2px dashed var(--line);border-radius:10px;margin:8px 0}
+.chip{display:inline-flex;align-items:center;gap:4px;border:2px solid var(--line);background:var(--panel);border-radius:9px;padding:5px 10px;font-size:14px;cursor:grab;user-select:none;max-width:100%;line-height:1.35}
+.chip.code{font-family:var(--mono);font-size:13px}
+.chip.sel{border-color:var(--blue);background:var(--blue-soft);box-shadow:0 0 0 3px var(--blue-soft)}
+.chip.bad{border:2px dashed var(--bad);background:var(--bad-soft)}
+.chip.done{border-color:var(--ok);background:var(--ok-soft);cursor:default;font-size:13px;padding:3px 8px}
+html.lang-both .chip span.zh{display:block;margin-left:0}
+.bk-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+@media (max-width:600px){.bk-grid{grid-template-columns:1fr 1fr}.bucket{min-height:64px}}
+.bucket{border:2px solid var(--line);border-radius:11px;padding:8px;min-height:90px;background:var(--panel2);cursor:pointer;transition:all .15s}
+.bucket:hover,.bucket.over{border-color:var(--accent);background:var(--accent-soft)}
+.bucket .bh{font-weight:700;font-size:14px;margin-bottom:6px}
+.bucket .bi{display:flex;flex-wrap:wrap;gap:4px}
+.fc{perspective:1200px;cursor:pointer;margin:10px 0}
+.fc-in{position:relative;min-height:200px;transition:transform .45s;transform-style:preserve-3d}
+.fc.flip .fc-in{transform:rotateY(180deg)}
+.fc-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:18px 22px;border-radius:14px;border:2px solid var(--line);background:var(--panel);overflow:auto}
+.fc-front{border-color:var(--accent);font-size:22px;font-weight:700}
+.fc-back{transform:rotateY(180deg);background:var(--ok-soft);border-color:var(--ok);font-size:16.5px}
+.fc-face small{font-size:12px;color:var(--muted);font-weight:400;margin-top:8px}
+html.lang-both .fc-face span.zh{display:block;margin-left:0;font-size:.85em}
+pre.code input.cz{font-family:var(--mono);font-size:13.5px;background:#34323c;color:#fff;border:0;border-bottom:2px dashed #f5b041;border-radius:3px;padding:0 3px;margin:0 1px;text-align:center}
+pre.code input.cz.ok{border:2px solid #6aa6ff;background:#1b3360}
+pre.code input.cz.no{border:2px dashed #ff7b54;background:#5a1f12;text-decoration:line-through;text-decoration-color:#ff7b54}
+</style>
+</head>
+<body>
+<noscript><div style="max-width:640px;margin:40px auto;padding:20px 22px;border:2px solid #d2361a;border-radius:12px;font:16px/1.6 system-ui,sans-serif;background:#fff;color:#1d1d1f">
+<b>⚠️ This viewer does not run JavaScript, so the study page cannot start.</b><br>
+Open the same file in a real browser: on a computer, double-click it (Chrome / Edge / Safari / Firefox). On an Android phone: tap ⋮ / “Open with” → <b>Chrome</b>. Previews inside chat apps, Files / Drive apps and e-mail cannot run it.
+<hr style="border:none;border-top:1px solid #ddd;margin:12px 0">
+<b>⚠️ 当前查看器不运行 JavaScript，复习网页无法启动。</b><br>
+请用真正的浏览器打开同一个文件：电脑上直接双击（Chrome / Edge / Safari / Firefox）；安卓手机：点 ⋮ 或“用其他应用打开” → 选 <b>Chrome</b>。聊天软件、网盘/文件 App、邮件里的“预览”都打不开它。</div></noscript>
+<header class="top">
+  <button class="menu-btn" onclick="document.body.classList.toggle('menu')">☰</button>
+  <div class="brand"><b>Sorting</b> <span class="mr">demo course</span></div>
+  <div class="sp"></div>
+  <button class="glbtn" id="glbtn" title="Underlined English words: tap for Chinese / 英文单词点一下看中文">📖<span class="glt"> <span class="en">Word help</span><span class="zh">查词</span></span></button>
+  <div class="seg" id="langseg">
+    <button data-l="en">EN</button><button data-l="zh">中文</button><button data-l="both">双语</button>
+  </div>
+</header>
+<div class="wrap">
+  <nav class="side" id="side"></nav>
+  <main><div class="page" id="page"></div></main>
+</div>
+
+<script>
+/* ===== engine.js ===== */
+/* =====================================================================
+   study-site-builder ENGINE — generic, course-independent.
+   Course content registers itself with SITE.chapter(), SITE.bank(), SITE.widgets, DECK.*, SITE.GLOSS, SITE.RVX.
+   ===================================================================== */
+/* =====================================================================
+   CORE ENGINE
+   ===================================================================== */
+const SITE = { chapters: [], banks: {}, widgets: {}, course: {}, GLOSS: {}, RVX: {} };
+const DSA = SITE;   // alias: older course files use DSA.*
+
+/* ---- storage (wrapped: storage may be unavailable). Keys are namespaced per course id, because
+   every file:// page in a browser shares one localStorage. ---- */
+const lsKey = k => (SITE.course.id || 'site') + ':' + k;
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem(lsKey(k)); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(lsKey(k), JSON.stringify(v)); } catch (e) {} }
+};
+
+/* ---- tiny helpers ---- */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function attr(s) { return esc(s).replace(/"/g, '&quot;'); }
+/** inline bilingual text */
+function T(en, zh) { return `<span class="en">${en}</span><span class="zh">${zh == null ? en : zh}</span>`; }
+/** paragraph bilingual */
+function P(en, zh) { return `<p class="en">${en}</p><p class="zh">${zh}</p>`; }
+/** list of bilingual items */
+function L(items, ordered) { const t = ordered ? 'ol' : 'ul'; return `<${t}>` + items.map(x => `<li>${Array.isArray(x) ? T(x[0], x[1]) : x}</li>`).join('') + `</${t}>`; }
+/** callout boxes: kind = note | tip | warn | exam */
+function BOX(kind, en, zh) {
+  const head = { note: ['Note', '注意'], tip: ['Tip', '技巧'], warn: ['Common mistake', '易错点'], exam: ['Exam focus', '考点'] }[kind];
+  return `<div class="${kind}"><b class="h">${T(head[0], head[1])}</b>${T(en, zh)}</div>`;
+}
+/** collapsible, low-key refresher for background knowledge the slides assume */
+function RV(en, zh, body) { return `<details class="rv"><summary>${T('Refresher: ' + en, '知识回顾：' + zh)}</summary><div class="rvb">${body}</div></details>`; }
+/** inline code */
+function K(s) { return `<code class="i">${esc(s)}</code>`; }
+/** quiz placeholder: chapter bank + group */
+function QZ(ch, group, title, tag) { return `<div class="quizmount" data-ch="${ch}" data-g="${group || ''}" data-tag="${tag || ''}" data-title="${title ? attr(JSON.stringify(title)) : ''}"></div>`; }
+/** widget placeholder */
+function W(name, arg) { return `<div class="wmount" data-w="${name}" data-arg="${arg ? attr(JSON.stringify(arg)) : ''}"></div>`; }
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function rint(a, b) { return a + Math.floor(Math.random() * (b - a + 1)); }
+function distinctInts(n, lo, hi) { const s = new Set(); while (s.size < n) s.add(rint(lo, hi)); return shuffle([...s]); }
+
+/* ---- C++ highlighter ---- */
+const KW = new Set(('int double float char bool void long short unsigned const class struct public private protected return if else for while do new delete true false ' +
+  'using namespace typedef enum this friend static sizeof break continue switch case default string fstream ifstream ofstream reinterpret_cast std cout cin endl ios').split(' '));
+function hlLine(s) {
+  const re = /(\/\/.*$|\/\*.*?\*\/)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')|(#\w+)|\b(\d+\.?\d*L?)\b|([A-Za-z_]\w*)/g;
+  let out = '', last = 0, m;
+  while ((m = re.exec(s))) {
+    out += esc(s.slice(last, m.index));
+    if (m[1]) out += `<span class="c-com">${esc(m[1])}</span>`;
+    else if (m[2]) out += `<span class="c-str">${esc(m[2])}</span>`;
+    else if (m[3]) out += `<span class="c-pre">${esc(m[3])}</span>`;
+    else if (m[4]) out += `<span class="c-num">${m[4]}</span>`;
+    else if (m[5]) out += KW.has(m[5]) ? `<span class="c-kw">${m[5]}</span>` : (/^\s*\(/.test(s.slice(re.lastIndex)) ? `<span class="c-fn">${m[5]}</span>` : esc(m[5]));
+    last = re.lastIndex;
+  }
+  return out + esc(s.slice(last));
+}
+function dedent(raw) {
+  let lines = raw.replace(/^\n/, '').replace(/\s+$/, '').split('\n');
+  const ind = Math.min(...lines.filter(l => l.trim()).map(l => l.match(/^ */)[0].length));
+  return lines.map(l => l.slice(ind));
+}
+function codeHTML(raw, cls) {
+  const lines = dedent(raw);
+  return `<pre class="code ${cls || ''}"><code>` + lines.map((l, i) => `<span class="l" data-n="${i + 1}">${hlLine(l) || ' '}</span>`).join('') + `</code></pre>`;
+}
+/** tagged template for code: C`...` keeps backslashes raw */
+function C(s, ...v) { return codeHTML(String.raw(s, ...v)); }
+function highlightLines(pre, lines) { $$('.l', pre).forEach((el, i) => el.classList.toggle('hl', lines.includes(i + 1))); }
+
+/* ---- language ---- */
+function setLang(l) {
+  const h = document.documentElement; h.classList.remove('lang-en', 'lang-zh', 'lang-both'); h.classList.add('lang-' + l);
+  $$('#langseg button').forEach(b => b.classList.toggle('on', b.dataset.l === l));
+  LS.set('lang', l);
+}
+
+/* ---- registration ---- */
+SITE.chapter = function (ch) { SITE.chapters.push(ch); };
+SITE.bank = function (ch, list) {
+  const arr = (SITE.banks[ch] = SITE.banks[ch] || []);
+  list.forEach(q => { q.ch = ch; q.id = q.id || ch + '-' + (arr.length + 1); arr.push(q); });
+};
+SITE.allQs = () => Object.values(SITE.banks).flat();
+SITE.findQ = id => SITE.allQs().find(q => q.id === id);
+
+/* ---- progress ---- */
+const done = () => LS.get('done', {});
+function markDone(key, v) { const d = done(); if (v) d[key] = 1; else delete d[key]; LS.set('done', d); }
+
+/* =====================================================================
+   QUIZ ENGINE
+   q = { t:'mcq'|'multi'|'fill'|'gen', g:'group', q:[en,zh], code:`raw`, o:[[en,zh]|'same'], a:index|[indexes]|['accepted answers'], e:[en,zh], ecode:`raw` }
+   'gen' : { t:'gen', g, make: () => (a normal question object) }  → regenerated each time
+   ===================================================================== */
+function normAns(s) { return String(s).toLowerCase().replace(/[\[\]{}()]/g, ' ').replace(/[,;\s]+/g, ' ').replace(/\s*([+*\/^=-])\s*/g, '$1').trim(); }
+function optHTML(o) { return Array.isArray(o) ? T(o[0], o[1]) : o; }
+function stats() { return LS.get('stats', {}); }
+/* per-question history: stats[id] = { c: right, w: wrong, h: last 8 results as '1'/'0', t: last time }.
+   A random generator is tracked under its own id. Mastered = the last two attempts were both right. */
+function recordAnswer(q, ok, inMistakes, id, given) {
+  id = id || q.id; if (!id) return;
+  const s = stats(); const r = s[id] || { c: 0, w: 0 }; ok ? r.c++ : r.w++; r.h = ((r.h || '') + (ok ? '1' : '0')).slice(-8); r.t = Date.now();
+  if (given != null) r.g = String(given).slice(0, 120);                       // what the student answered last time
+  if (q.gen) { r.gq = plain(q.q[0]).slice(0, 200); r.ga = ansText(q).slice(0, 120); if (q.code) r.gc = q.code.slice(0, 400); }  // a random instance: keep the actual question
+  s[id] = r; LS.set('stats', s);
+  if (q.gen) return;
+  const wb = new Set(LS.get('wrong', []));
+  if (!ok) wb.add(q.id); else if (inMistakes) wb.delete(q.id);
+  LS.set('wrong', [...wb]);
+}
+function plain(h) { return String(h == null ? '' : h).replace(/<br\s*\/?>/g, ' / ').replace(/<[^>]+>/g, '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim(); }
+function optPlain(o) { return plain(Array.isArray(o) ? o[0] : o); }
+function ansText(q) { const L = 'ABCDEFGH';
+  if (q.t === 'mcq') return L[q.a] + '. ' + optPlain(q.o[q.a]);
+  if (q.t === 'multi') return q.a.map(i => L[i] + '. ' + optPlain(q.o[i])).join(' + ');
+  if (q.t === 'fill') return String(q.a[0]); return ''; }
+function qMastered(r) { return !!r && (r.h ? /11$/.test(r.h) : (r.w === 0 && r.c >= 2)); }
+function qState(id) { const r = stats()[id]; return !r || !(r.c + r.w) ? 'new' : qMastered(r) ? 'mastered' : 'review'; }
+function agoText(t) { if (!t) return ''; const m = Math.round((Date.now() - t) / 60000); return m < 60 ? T(m + ' min ago', m + ' 分钟前') : m < 1440 ? T(Math.round(m / 60) + ' h ago', Math.round(m / 60) + ' 小时前') : T(Math.round(m / 1440) + ' d ago', Math.round(m / 1440) + ' 天前'); }
+function histHTML(id) {
+  const r = stats()[id];
+  if (!r || !(r.c + r.w)) return `<span class="hist new">${T('new', '未做过')}</span>`;
+  const m = qMastered(r), dots = (r.h || '').split('').map(x => `<i class="${x === '1' ? 'y' : 'n'}"></i>`).join('');
+  return `<span class="hist ${m ? 'm' : 'r'}" title="right 对 ${r.c} · wrong 错 ${r.w}">${dots}<span class="hc">${m ? '✓ ' + T('mastered', '已掌握') : T('review', '待复习')} · ${r.c}✓ ${r.w}✗</span><span class="ht"> · ${agoText(r.t)}</span></span>`;
+}
+/* small "last / best" memory for practice widgets (cloze, judge drill, answer sheets) */
+function enOnly(h) { return plain(String(h).replace(/<span class="zh">[\s\S]*?<\/span>/g, '')); }
+function wRec(key, got, n, label) { const all = LS.get('wrec', {}); const r = all[key] || { n: 0 }; r.n++; if (label) r.lb = enOnly(label).slice(0, 100); r.last = got; r.of = n; const pct = n ? Math.round(got / n * 100) : 0;
+  r.bp = Math.max(r.bp != null ? r.bp : (r.best != null && r.of ? Math.min(100, Math.round(r.best / r.of * 100)) : 0), pct); delete r.best; r.t = Date.now(); all[key] = r; LS.set('wrec', all); }
+function wRecHTML(key) { const r = LS.get('wrec', {})[key]; return r ? `<span class="wrec">${T('Last', '上次')} ${r.last}/${r.of} · ${T('best', '最好')} ${r.bp != null ? r.bp : Math.min(100, Math.round((r.best || 0) / (r.of || 1) * 100))}% · ${T('done', '做过')} ${r.n}× · ${agoText(r.t)}</span>` : ''; }
+function renderQuestion(q, no, opts = {}) {
+  let cur = q.t === 'gen' ? Object.assign(q.make(), { gen: true, g: q.g }) : q;
+  const el = document.createElement('div'); el.className = 'q';
+  const draw = () => {
+    el.className = 'q';
+    const DK = `<button class="btn sm dk" title="Count it as wrong and show the answer">🤷 ${T('Don’t know', '不会')}</button>`;
+    const tag = cur.gen ? `<span class="pill">${T('Random drill', '随机生成')}</span>` : '';
+    let h = `<div class="qh"><span class="no">Q${no}</span>${tag}${opts.showCh ? `<span class="pill">${q.ch.toUpperCase()}</span>` : ''}<span style="flex:1"></span>${q.id ? histHTML(q.id) : ''}<button class="xl" title="translate this question / 翻译本题"><span class="en">中文</span><span class="zh">EN</span></button></div>`;
+    h += `<div class="qtext">${T(cur.q[0], cur.q[1])}</div>`;
+    if (cur.code) h += codeHTML(cur.code);
+    if (cur.html) h += cur.html;
+    if (cur.t === 'mcq' || cur.t === 'multi') {
+      h += `<div class="opts">` + cur.o.map((o, i) => `<button class="opt" data-i="${i}"><span class="k">${'ABCDEFGH'[i]}</span><span>${optHTML(o)}</span></button>`).join('') + `</div>`;
+      if (cur.t === 'multi') h += `<div class="row"><span style="font-size:13px;color:var(--muted)">${T('Select all that apply', '多选：选出全部正确项')}</span><button class="btn sm pri chk">${T('Check', '提交')}</button>${DK}</div>`;
+      else h += `<div class="row">${DK}</div>`;
+    } else if (cur.t === 'fill') {
+      h += `<div class="row"><input class="in mono ans" style="flex:1;min-width:220px" placeholder="${cur.ph || 'answer'}"><button class="btn pri chk">${T('Check', '提交')}</button>${DK}</div>`;
+    }
+    h += `<div class="res"></div>`;
+    if (cur.gen && !opts.deferred) h += `<div class="row"><button class="btn sm regen">🎲 ${T('New question', '换一题')}</button></div>`;
+    el.innerHTML = h;
+    const res = $('.res', el);
+    const finish = (ok, shown, paint, given) => {
+      recordAnswer(cur, ok && !shown, opts.inMistakes, q.id, shown ? "(don't know)" : given);
+      const hs = $('.hist', el); if (hs && !opts.deferred) hs.outerHTML = histHTML(q.id);
+      opts.onAnswer && opts.onAnswer(ok && !shown, cur);
+      const reveal = () => { paint && paint(); finishShow(ok, shown); };
+      if (opts.deferred) { el._reveal = reveal; res.innerHTML = `<div class="fb" style="color:var(--blue)">${shown ? '🤷 ' + T('Marked as don’t know', '已标记为不会') : T('Answer recorded', '已作答')}</div>`; }
+      else reveal();
+    };
+    const finishShow = (ok, shown) => {
+      el.classList.add(ok ? 'right' : 'wrong');
+      let fb = shown ? `<div class="fb no">🤷 ${T('Marked “don’t know” — saved to the mistake bank. Here is the answer:', '已标记“不会”——已放进错题本。答案如下：')}</div>` : `<div class="fb ${ok ? 'ok' : 'no'}">${ok ? T('✓ Correct', '✓ 正确') : T('✗ Not quite', '✗ 错了')}</div>`;
+      if (cur.t === 'fill') fb += `<div style="margin-top:4px">${T('Answer', '答案')}: <code style="font-family:var(--mono)">${esc(cur.a[0])}</code></div>`;
+      if (cur.e) fb += `<div class="exp">${T(cur.e[0], cur.e[1])}${cur.ecode ? codeHTML(cur.ecode) : ''}</div>`;
+      res.innerHTML = fb;
+    };
+    if (cur.t === 'mcq') {
+      $$('.opt', el).forEach(b => b.onclick = () => {
+        if (el.dataset.done) return; el.dataset.done = 1;
+        const i = +b.dataset.i, ok = i === cur.a;
+        b.classList.add('sel');
+        finish(ok, false, () => { b.classList.remove('sel'); $$('.opt', el).forEach(x => { if (+x.dataset.i === cur.a) x.classList.add('good'); }); if (!ok) b.classList.add('bad'); }, 'ABCDEFGH'[i] + '. ' + optPlain(cur.o[i]));
+      });
+    } else if (cur.t === 'multi') {
+      $$('.opt', el).forEach(b => b.onclick = () => { if (!el.dataset.done) b.classList.toggle('sel'); });
+      $('.chk', el).onclick = () => {
+        if (el.dataset.done) return; el.dataset.done = 1;
+        const sel = $$('.opt.sel', el).map(b => +b.dataset.i).sort().join();
+        const ok = sel === cur.a.slice().sort().join();
+        finish(ok, false, () => $$('.opt', el).forEach(b => { const i = +b.dataset.i; if (cur.a.includes(i)) b.classList.add('good'); else if (b.classList.contains('sel')) b.classList.add('bad'); b.classList.remove('sel'); }), sel.split(',').filter(x => x !== '').map(i => 'ABCDEFGH'[+i]).join(' + ') || '(nothing)');
+      };
+    } else if (cur.t === 'fill') {
+      const inp = $('.ans', el);
+      const check = () => {
+        if (el.dataset.done) return; if (!inp.value.trim()) return;
+        el.dataset.done = 1;
+        const v = normAns(inp.value); const ok = cur.a.some(a => normAns(a) === v);
+        finish(ok, false, null, inp.value.trim());
+      };
+      $('.chk', el).onclick = check; inp.onkeydown = e => { if (e.key === 'Enter') check(); };
+    }
+    $('.dk', el).onclick = () => {
+      if (el.dataset.done) return; el.dataset.done = 1;
+      finish(false, true, () => $$('.opt', el).forEach(x => { const i = +x.dataset.i; x.classList.remove('sel'); if (cur.t === 'mcq' ? i === cur.a : (cur.a || []).includes && cur.t === 'multi' && cur.a.includes(i)) x.classList.add('good'); }));
+    };
+    $('.xl', el).onclick = () => el.classList.toggle('xlate');
+    const rg = $('.regen', el);
+    if (rg) rg.onclick = () => { cur = Object.assign(q.make(), { gen: true, g: q.g }); delete el.dataset.done; draw(); };
+  };
+  draw();
+  return el;
+}
+function renderQuizList(container, list, opts = {}) {
+  container.innerHTML = '';
+  const bar = document.createElement('div'); bar.className = 'qbar';
+  let answered = 0, right = 0;
+  const all = opts._all || list, cnt = { new: 0, review: 0, mastered: 0 }; all.forEach(q => cnt[qState(q.id)]++);
+  const todo = all.filter(q => qState(q.id) !== 'mastered');
+  const upd = () => { bar.innerHTML = `<b>${opts.title ? T(opts.title[0], opts.title[1]) : T('Practice', '练习')}</b><span>${T('Answered', '已答')} ${answered}/${list.length}</span><span style="color:var(--ok)">${T('Correct', '正确')} ${right}</span>
+      ${opts.noHist ? '' : `<span class="mast" title="Mastered = last two attempts right / 已掌握 = 最近两次都答对"><i class="y"></i>${cnt.mastered} ${T('mastered', '已掌握')} <i class="n"></i>${cnt.review} ${T('to review', '待复习')} <i></i>${cnt.new} ${T('new', '未做')}</span>`}
+      <span class="sp" style="flex:1"></span>${opts.noHist ? '' : opts._all ? `<button class="btn sm fa">${T('Show all', '显示全部')} (${all.length})</button>` : todo.length && todo.length < all.length ? `<button class="btn sm pri fo">${T('Only not mastered', '只练没掌握的')} (${todo.length})</button>` : ''}<button class="btn sm rs">${T('Reset', '重做')}</button>${opts.shuffle !== false ? `<button class="btn sm sh">${T('Shuffle', '打乱顺序')}</button>` : ''}`;
+    $('.rs', bar).onclick = () => renderQuizList(container, list, opts);
+    const fo = $('.fo', bar); if (fo) fo.onclick = () => renderQuizList(container, todo, Object.assign({}, opts, { _all: all }));
+    const fa = $('.fa', bar); if (fa) fa.onclick = () => { const o = Object.assign({}, opts); delete o._all; renderQuizList(container, all, o); };
+    const sh = $('.sh', bar); if (sh) sh.onclick = () => renderQuizList(container, shuffle(list), opts); };
+  upd(); container.appendChild(bar);
+  list.forEach((q, i) => container.appendChild(renderQuestion(q, i + 1, Object.assign({}, opts, { onAnswer: ok => { answered++; if (ok) right++; upd(); } }))));
+  if (!list.length) container.insertAdjacentHTML('beforeend', `<p>${T('No questions here yet.', '这里还没有题。')}</p>`);
+}
+
+/* =====================================================================
+   ROUTER + RENDER
+   routes:  #/              home
+            #/ch1/s2        section
+            #/mistakes      wrong-question bank
+            #/mock          mock exam
+            #/vocab         vocabulary list
+            #/ai            hand-over report for an AI tutor
+   ===================================================================== */
+function sectionKey(ch, s) { return ch.id + '/' + s.id; }
+function flatSections() { const out = []; SITE.chapters.forEach(ch => (ch.sections || []).forEach(s => out.push({ ch, s }))); return out; }
+/* ---- exam focus: SITE.course.focus = { budget: hours, chapters: { chId: { pct, stars, marks, exam, do, skip, sec: { s1: 'must'|'core'|'low'|'skip' } } } } ---- */
+const PRIO = { must: ['★ Must do', '★ 必做'], core: ['Important', '重点'], low: ['Skim', '略看'], skip: ['Skip for this exam', '本次考试可跳过'] };
+function focusOf(chId) { const F = SITE.course.focus; return F && F.chapters && F.chapters[chId]; }
+function focusBudget() { const F = SITE.course.focus || {}; return +LS.get('budget', F.budget || 20) || 20; }
+function focusHours(f) { const h = f.pct * focusBudget() / 100; return h < 1 ? Math.round(h * 60) + ' min' : (Math.round(h * 2) / 2) + ' h'; }
+function stars(n) { return '★★★★★'.slice(0, n) + '☆☆☆☆☆'.slice(0, 5 - n); }
+function focusBanner(ch, s, first) {
+  const f = focusOf(ch.id); if (!f) return '';
+  const pr = f.sec && f.sec[s.id];
+  const head = `<b>🎯 ${T('Effort for this chapter: ', '本章投入：')}<span class="stars">${stars(f.stars)}</span> · ${T('about', '约')} ${focusHours(f)} (${f.pct}% ${T('of your time', '的时间')})</b>`;
+  if (!first) return `<div class="focus slim">${head}${pr ? ` · ${T('this section', '本节')}: <span class="prio ${pr}">${T(PRIO[pr][0], PRIO[pr][1])}</span>` : ''} <a href="#/${sectionKey(ch, ch.sections[0])}">${T('details', '详情')}</a></div>`;
+  const row = (k, lab) => f[k] ? `<div class="frow"><span class="flab">${T(lab[0], lab[1])}</span><span>${T(f[k][0], f[k][1])}</span></div>` : '';
+  const secs = ch.sections.filter(x => f.sec && f.sec[x.id]).map(x => `<a class="prio ${f.sec[x.id]}" href="#/${sectionKey(ch, x)}">${T(PRIO[f.sec[x.id]][0], PRIO[f.sec[x.id]][1])} · ${T(x.t[0], x.t[1])}</a>`).join('');
+  const nPast = SITE.allQs().filter(q => q.c === ch.id).length;
+  return `<div class="focus">${head}${row('marks', ['Past-paper marks', '历年分值'])}${row('exam', ['How it is examined', '怎么考'])}${row('do', ['Do this', '重点做'])}${row('skip', ['Skip', '可以跳过'])}
+    ${secs ? `<div class="frow"><span class="flab">${T('Sections', '各节')}</span><span class="fsecs">${secs}</span></div>` : ''}
+    ${nPast ? `<details class="rv"><summary>${T(`Past-paper questions on this chapter (${nPast})`, `本章历年真题（${nPast} 道）`)}</summary><div class="rvb">${QZ(SITE.course.focus.bank || 'test1', '', ['Past-paper questions', '历年真题'], ch.id)}</div></details>` : ''}</div>`;
+}
+function focusTable() {
+  const F = SITE.course.focus; if (!F || !F.chapters) return '';
+  const rows = SITE.chapters.filter(c => F.chapters[c.id]).map(c => { const f = F.chapters[c.id];
+    return `<tr><td><a href="#/${c.sections && c.sections[0] ? sectionKey(c, c.sections[0]) : ''}">${c.num} ${T(c.t[0], c.t[1])}</a></td><td>${f.avg != null ? f.avg : ''}</td><td><span class="stars">${stars(f.stars)}</span></td><td><div class="fbar"><i style="width:${f.pct}%"></i></div>${f.pct}%</td><td><b>${focusHours(f)}</b></td></tr>`; }).join('');
+  const extra = (F.extra || []).map(x => `<tr><td>${T(x.t[0], x.t[1])}</td><td></td><td></td><td><div class="fbar"><i style="width:${x.pct}%"></i></div>${x.pct}%</td><td><b>${focusHours(x)}</b></td></tr>`).join('');
+  return `<h2>${T(F.title ? F.title[0] : 'Where to spend your time', F.title ? F.title[1] : '时间该花在哪里')}</h2>${F.note ? P(F.note[0], F.note[1]) : ''}
+    <div class="row">${T('Hours I have left before the exam', '考前我还剩')} <input class="in" id="budget" type="number" min="1" max="200" step="1" value="${focusBudget()}" style="width:5em"> ${T('hours', '小时')}</div>
+    <div style="overflow-x:auto"><table class="t"><tr><th>${T('Chapter', '章节')}</th><th>${T('Avg marks /' + (SITE.course.focus.outOf || 100), '平均分值 /' + (SITE.course.focus.outOf || 100))}</th><th>${T('Priority', '优先级')}</th><th>${T('Share of time', '时间占比')}</th><th>${T('Hours', '时长')}</th></tr>${rows}${extra}</table></div>`;
+}
+function renderSide(curKey) {
+  const d = done();
+  let h = `<a class="sec ${curKey === 'home' ? 'cur' : ''}" href="#/" style="font-weight:650;margin:0 0 8px">🏠 ${T('Home & study plan', '首页 & 复习计划')}</a>`;
+  SITE.chapters.forEach(ch => {
+    const open = curKey.startsWith(ch.id + '/');
+    const fo = focusOf(ch.id);
+    h += `<div class="grp ${open ? 'open' : ''}" data-ch="${ch.id}"><button class="ch ${ch.soon ? 'soon' : ''}"><span class="num">${ch.num}</span><span>${T(ch.t[0], ch.t[1])}</span>${fo ? `<span class="hrs" title="${fo.pct}%">${focusHours(fo)}</span>` : ''}</button><div class="secs">`;
+    if (ch.soon) h += `<div class="sec" style="color:var(--muted)">${T('Coming soon…', '制作中…')}</div>`;
+    (ch.sections || []).forEach(s => { const k = sectionKey(ch, s), pr = fo && fo.sec && fo.sec[s.id]; h += `<a class="sec ${k === curKey ? 'cur' : ''} ${pr ? 'p-' + pr : ''}" href="#/${k}"><span class="tick">${d[k] ? '✓' : (pr === 'must' ? '★' : '')}</span><span>${T(s.t[0], s.t[1])}</span></a>`; });
+    h += `</div></div>`;
+  });
+  const nw = LS.get('wrong', []).length;
+  h += `<div class="extra"><a class="sec ${curKey === 'mistakes' ? 'cur' : ''}" href="#/mistakes">📕 ${T('Mistake bank', '错题本')} (${nw})</a><a class="sec ${curKey === 'mock' ? 'cur' : ''}" href="#/mock">📝 ${T('Mock exam', '模拟考')}</a><a class="sec ${curKey === 'vocab' ? 'cur' : ''}" href="#/vocab">📒 ${T('Vocabulary list', '生词本')} (<span id="vocabcount">${Object.keys(LS.get('vocab', {})).length}</span>)</a><a class="sec ${curKey === 'ai' ? 'cur' : ''}" href="#/ai">🤖 ${T('Hand over to AI', '交给 AI')}</a></div>`;
+  const side = $('#side'); side.innerHTML = h;
+  $$('.grp .ch', side).forEach(b => b.onclick = () => {
+    const g = b.parentElement, ch = SITE.chapters.find(c => c.id === g.dataset.ch);
+    if (!g.classList.contains('open') && ch.sections && ch.sections.length && !curKey.startsWith(ch.id + '/')) location.hash = '#/' + sectionKey(ch, ch.sections[0]);
+    else g.classList.toggle('open');
+  });
+}
+function mountDynamic(root) {
+  $$('.wmount', root).forEach(el => {
+    const f = SITE.widgets[el.dataset.w];
+    const arg = el.dataset.arg ? JSON.parse(el.dataset.arg) : undefined;
+    if (f) { try { f(el, arg); } catch (e) { el.innerHTML = '<div class="warn">Widget error: ' + esc(e.message) + '</div>'; console.error(e); } }
+  });
+  $$('.quizmount', root).forEach(el => {
+    const list = (SITE.banks[el.dataset.ch] || []).filter(q => (!el.dataset.g || el.dataset.g.split(',').includes(q.g)) && (!el.dataset.tag || q.c === el.dataset.tag));
+    const title = el.dataset.title ? JSON.parse(el.dataset.title) : ['Check yourself', '自测一下'];
+    renderQuizList(el, list, { title, shuffle: false });
+  });
+}
+function render() {
+  const hash = location.hash.replace(/^#\/?/, '');
+  const page = $('#page');
+  document.body.classList.remove('menu');
+  if (hash === 'mistakes') { renderSide('mistakes'); renderMistakes(page); window.scrollTo(0, 0); return; }
+  if (hash === 'vocab') { renderSide('vocab'); renderVocab(page); window.scrollTo(0, 0); return; }
+  if (hash === 'mock') { renderSide('mock'); renderMock(page); window.scrollTo(0, 0); return; }
+  if (hash === 'ai') { renderSide('ai'); renderAI(page); window.scrollTo(0, 0); return; }
+  const flat = flatSections();
+  const idx = flat.findIndex(x => sectionKey(x.ch, x.s) === hash);
+  if (idx < 0) { renderSide('home'); renderHome(page); window.scrollTo(0, 0); return; }
+  const { ch, s } = flat[idx], key = sectionKey(ch, s);
+  renderSide(key);
+  const prev = flat[idx - 1], next = flat[idx + 1];
+  const isDone = !!done()[key];
+  page.innerHTML = `<div class="crumb">${ch.num} · ${T(ch.t[0], ch.t[1])}</div><h1>${T(s.t[0], s.t[1])}</h1>` + focusBanner(ch, s, ch.sections[0] === s) +
+    (typeof s.html === 'function' ? s.html() : s.html) +
+    `<div class="done-row"><button class="btn ${isDone ? '' : 'pri'}" id="donebtn">${isDone ? T('✓ Marked as done (click to undo)', '✓ 已完成（点击取消）') : T('Mark this section as done', '标记本节已完成')}</button></div>` +
+    `<div class="navbtns"><div>${prev ? `<a class="btn" href="#/${sectionKey(prev.ch, prev.s)}">← ${T(prev.s.t[0], prev.s.t[1])}</a>` : ''}</div><div>${next ? `<a class="btn pri" href="#/${sectionKey(next.ch, next.s)}">${T(next.s.t[0], next.s.t[1])} →</a>` : ''}</div></div>`;
+  $('#donebtn').onclick = () => { markDone(key, !isDone); render(); };
+  mountDynamic(page);
+  bindBudget(page);
+  if (!render.keepScroll) window.scrollTo(0, 0);
+}
+function chapterProgress(ch) { const d = done(); const s = ch.sections || []; return s.length ? s.filter(x => d[sectionKey(ch, x)]).length / s.length : 0; }
+function renderMistakes(page) {
+  const ids = LS.get('wrong', []); const list = ids.map(SITE.findQ).filter(Boolean);
+  page.innerHTML = `<h1>📕 ${T('Mistake bank', '错题本')}</h1><div class="row"><a class="btn sm" href="#/ai">🤖 ${T('Ask an AI to analyse these', '让 AI 分析这些错题')}</a></div>` +
+    P('Every question you get wrong lands here automatically. Answer it correctly <b>on this page</b> to remove it. Clear this list before the exam.', '你答错的题会自动进这里。在<b>本页</b>答对才会移出。考前把它清零。') +
+    `<div id="mq"></div>`;
+  renderQuizList($('#mq'), list, { title: ['Mistakes', '错题'], inMistakes: true, showCh: true });
+}
+/* ===================== AI handoff =====================
+   The study data lives only in this browser. This page turns it into one Markdown report that the student
+   pastes into any AI tool; the report starts with instructions, so the AI can take over without context. */
+function aiReport() {
+  const C = SITE.course, S = stats(), d = done(), wr = new Set(LS.get('wrong', [])), now = new Date();
+  const lang = LS.get('lang', C.lang || 'zh'), langName = { zh: 'Chinese (简体中文)', en: 'English', both: 'Chinese, keeping English technical terms' }[lang] || 'Chinese';
+  const pct = (a, b) => b ? Math.round(a / b * 100) + '%' : '–';
+  const hist = h => (h || '').split('').map(x => x === '1' ? '✓' : '✗').join('');
+  const chName = id => { const ch = SITE.chapters.find(c => c.id === id); return ch ? `${ch.num} ${ch.t[0]}` : id; };
+  const tally = qs => { const o = { n: qs.length, tried: 0, mastered: 0, review: 0, c: 0, w: 0 }; qs.forEach(q => { const r = S[q.id]; if (!r || !(r.c + r.w)) return; o.tried++; o.c += r.c; o.w += r.w; qMastered(r) ? o.mastered++ : o.review++; }); return o; };
+  const L = [];
+  L.push(`# Study handoff — ${C.title ? C.title[0] : 'study site'}`);
+  L.push(`Generated ${now.toLocaleString()} · site id \`${C.id || 'site'}\` · hours the student says are left: ${typeof focusBudget === 'function' ? focusBudget() : '?'}`);
+  L.push('', '## Instructions for the AI tutor', C.ai ? C.ai : `You are taking over as this student's tutor. The data below was exported from their interactive study page (they cannot see it laid out like this). Using it:
+1. Find the weakest topics, weighted by how many exam marks each is worth (see "Exam focus").
+2. For the wrong answers listed below, compare the student's answer with the correct one and name the misconception behind it — not just the right answer.
+3. Teach each weak point briefly with one worked example in the lecturer's conventions.
+4. Give an ordered plan for the remaining time (which page sections / drills to redo first).
+5. Finish with 3–5 new practice questions on the weakest points (with answers hidden at the end).
+Answer in ${langName}. Be direct and concise. Do not repeat this data back.`);
+  const F = C.focus;
+  if (F && F.chapters) {
+    L.push('', '## Exam focus (from past papers)', '| Chapter | Avg marks /' + (F.outOf || 100) + ' | Suggested share of time |', '|---|---|---|');
+    SITE.chapters.filter(c => F.chapters[c.id]).forEach(c => L.push(`| ${chName(c.id)} | ${F.chapters[c.id].avg ?? ''} | ${F.chapters[c.id].pct}% |`));
+  }
+  L.push('', '## Progress by chapter', '| Chapter | Sections marked done | Questions tried / total | Mastered | To review | Accuracy (all attempts) | Past-paper Qs mastered |', '|---|---|---|---|---|---|---|');
+  const all = SITE.allQs();
+  SITE.chapters.filter(c => !c.soon).forEach(c => {
+    const qs = SITE.banks[c.id] || [], t = tally(qs), secs = c.sections || [], past = tally(all.filter(q => q.c === c.id));
+    L.push(`| ${chName(c.id)} | ${secs.filter(x => d[sectionKey(c, x)]).length}/${secs.length} | ${t.tried}/${t.n} | ${t.mastered} | ${t.review} | ${pct(t.c, t.c + t.w)} | ${past.n ? past.mastered + '/' + past.n : '–'} |`);
+  });
+  const groups = {};
+  Object.entries(SITE.banks).forEach(([b, qs]) => qs.forEach(q => { const k = b + ' · ' + q.g; (groups[k] = groups[k] || []).push(q); }));
+  L.push('', '## By question group', '| Bank · group | Tried / total | Mastered | To review | Accuracy |', '|---|---|---|---|---|');
+  Object.entries(groups).forEach(([k, qs]) => { const t = tally(qs); if (t.tried) L.push(`| ${k} | ${t.tried}/${t.n} | ${t.mastered} | ${t.review} | ${pct(t.c, t.c + t.w)} |`); });
+  const W = LS.get('wrec', {}), wk = Object.keys(W).sort((a, b) => W[b].t - W[a].t);
+  if (wk.length) {
+    L.push('', '## Answer sheets & drills (latest first)', '| Item | Last | Best | Times | When |', '|---|---|---|---|---|');
+    const kind = { t1: 'answer sheet', cz: 'code cloze', jd: 'judge drill' };
+    wk.forEach(k => { const r = W[k], ty = k.split(':')[0], name = r.lb || ((DECK.cloze[k.slice(3)] || DECK.judge[k.slice(3)] || {}).t || [k.slice(3)])[0];
+      const best = r.bp != null ? r.bp : Math.min(100, Math.round((r.best || 0) / (r.of || 1) * 100));
+      L.push(`| ${kind[ty] || ty}: ${plain(name)} | ${r.last}/${r.of} | ${best}% | ${r.n} | ${new Date(r.t).toLocaleString()} |`); });
+  }
+  const weak = all.filter(q => { const r = S[q.id]; return r && (r.c + r.w) && !qMastered(r); }).sort((a, b) => S[b.id].t - S[a.id].t);
+  L.push('', `## Not mastered yet (${weak.length}) — latest first`);
+  if (!weak.length) L.push('None.');
+  weak.slice(0, 80).forEach(q => {
+    const r = S[q.id], gen = q.t === 'gen';
+    const text = gen ? (r.gq || `random ${q.g} drill`) : plain(q.q[0]);
+    const code = gen ? r.gc : q.code;
+    L.push(`- **[${chName(q.c || q.ch)} · ${q.ch}/${q.g}${gen ? ' · random' : ''}]** ${text.slice(0, 260)}`);
+    if (code) L.push('  ```cpp', ...code.trim().split('\n').slice(0, 12).map(x => '  ' + x), '  ```');
+    if (!gen && (q.t === 'mcq' || q.t === 'multi')) L.push(`  - options: ${q.o.map((o, i) => 'ABCDEFGH'[i] + '. ' + optPlain(o)).join(' | ').slice(0, 400)}`);
+    L.push(`  - correct: ${gen ? (r.ga || '?') : ansText(q)} · student last answered: ${r.g != null ? r.g : '(not recorded)'} · history: ${hist(r.h) || r.c + '✓ ' + r.w + '✗'} (${r.c}✓ ${r.w}✗)${wr.has(q.id) ? ' · in mistake bank' : ''}`);
+  });
+  if (weak.length > 80) L.push(`- … and ${weak.length - 80} more`);
+  const tried = all.filter(q => S[q.id] && (S[q.id].c + S[q.id].w)).length;
+  L.push('', `_Totals: ${tried} of ${all.length} questions tried; ${weak.length} not mastered; ${wr.size} in the mistake bank. “Mastered” = last two attempts right._`);
+  return L.join('\n');
+}
+function renderAI(page) {
+  const txt = aiReport();
+  page.innerHTML = `<h1>🤖 ${T('Hand over to an AI tutor', '交给 AI')}</h1>
+    ${P('Your progress is stored only in this browser. This button turns it into one report — with instructions at the top — that you can paste into any AI chat (Claude, ChatGPT, …). The AI then sees which questions you got wrong, what you answered, and where the marks are.', '你的学习记录只存在这个浏览器里。这个按钮把它整理成一份报告（开头附有给 AI 的说明），粘贴到任何 AI 对话（Claude、ChatGPT……）里，AI 就能看到你错了哪些题、你当时答了什么、分数在哪里。')}
+    <div class="row"><button class="btn pri" id="aicopy">📋 ${T('Copy the report', '复制交接报告')}</button><span id="aimsg" style="font-size:14px"></span></div>
+    ${BOX('note', 'Nothing is uploaded. Only what you paste leaves your computer. Your answers are recorded from now on; older attempts only have right/wrong.', '不会上传任何东西，只有你粘贴出去的内容才会离开你的电脑。你选的答案从现在开始记录；更早的记录只有对错。')}
+    <details class="rv"><summary>${T(`Preview (${txt.length.toLocaleString()} characters)`, `预览（${txt.length.toLocaleString()} 个字符）`)}</summary><div class="rvb"><textarea id="aitext" readonly style="width:100%;min-height:340px;font-family:var(--mono);font-size:12.5px;border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--panel2);color:var(--ink)"></textarea></div></details>`;
+  const ta = $('#aitext', page); ta.value = txt;
+  $('#aicopy', page).onclick = async () => {
+    const msg = $('#aimsg', page);
+    try { await navigator.clipboard.writeText(txt); msg.innerHTML = `<span class="tag-ok">✓ ${T('Copied — paste it into the AI chat.', '已复制——粘贴到 AI 对话里即可。')}</span>`; }
+    catch (e) { $('details', page).open = true; ta.focus(); ta.select(); msg.innerHTML = `<span class="tag-no">${T('Automatic copy was blocked — the text is selected below, press Ctrl+C.', '浏览器拦截了自动复制——下面的文字已全选，按 Ctrl+C。')}</span>`; }
+  };
+}
+function bindBudget(page) { const b = $('#budget', page); if (b) b.onchange = () => { LS.set('budget', Math.max(1, +b.value || 20)); render.keepScroll = true; render(); render.keepScroll = false; }; }
+function renderHome(page) { page.innerHTML = SITE.homeHTML(); mountDynamic(page); bindBudget(page); }
+function renderMock(page) { if (SITE.mockRender) SITE.mockRender(page); else page.innerHTML = `<h1>📝 ${T('Mock exam', '模拟考')}</h1>` + P('The mock exam unlocks after the chapters are added.', '章节上线后开放模拟考。'); }
+
+document.addEventListener('keydown', e => {
+  if (/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)) return;
+  if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+  const btns = $$('.navbtns a'); if (!btns.length) return;
+  const hash = location.hash.replace(/^#\/?/, ''); const flat = flatSections(); const idx = flat.findIndex(x => sectionKey(x.ch, x.s) === hash);
+  const t = flat[idx + (e.key === 'ArrowRight' ? 1 : -1)]; if (t) location.hash = '#/' + sectionKey(t.ch, t.s);
+});
+
+/** run fn (which may grow or shrink the content above `anchor`), then scroll by the same amount,
+ *  so the button the student just clicked stays under the mouse. Use it for every Next/Step button. */
+function keepPos(anchor, fn) { const y0 = anchor.getBoundingClientRect().top; fn(); const dy = anchor.getBoundingClientRect().top - y0; if (Math.abs(dy) > 1) window.scrollBy(0, dy); }
+/* ---- shared widget: step player (used by recursion/sorting visualizers) ---- */
+function stepPlayer(el, steps, drawStep, opts = {}) {
+  let i = 0, timer = null;
+  const ctl = document.createElement('div'); ctl.className = 'row';
+  ctl.innerHTML = `<button class="btn sm" data-a="first">⏮</button><button class="btn sm" data-a="prev">◀ ${T('Back', '上一步')}</button><button class="btn sm pri" data-a="next">${T('Next', '下一步')} ▶</button><button class="btn sm" data-a="play">⏵ ${T('Play', '自动播放')}</button><button class="btn sm" data-a="last">⏭</button><span class="cnt" style="font-size:13px;color:var(--muted)"></span>`;
+  el.appendChild(ctl);
+  const go = n => { i = Math.max(0, Math.min(steps.length - 1, n)); drawStep(steps[i], i); $('.cnt', ctl).textContent = `${i + 1} / ${steps.length}`; };
+  const stop = () => { clearInterval(timer); timer = null; $('[data-a=play]', ctl).innerHTML = `⏵ ${T('Play', '自动播放')}`; };
+  ctl.onclick = e => {
+    const a = e.target.closest('button')?.dataset.a; if (!a) return;
+    if (a === 'play') { if (timer) return stop(); $('[data-a=play]', ctl).innerHTML = `⏸ ${T('Pause', '暂停')}`; timer = setInterval(() => { if (i >= steps.length - 1) return stop(); go(i + 1); }, opts.speed || 700); return; }
+    stop();
+    keepPos(ctl, () => go({ first: 0, prev: i - 1, next: i + 1, last: steps.length - 1 }[a]));
+  };
+  go(0);
+  return { go, stop };
+}
+
+/* ---- SVG drawing helpers (bilingual labels, arrows, nodes) ---- */
+let SVGID = 0;
+/** bilingual SVG text: shows en / zh / "en · zh" depending on language mode */
+function svT(x, y, en, zh, a = '') {
+  zh = zh == null ? en : zh;
+  return `<text x="${x}" y="${y}" class="sv-en" ${a}>${en}</text><text x="${x}" y="${y}" class="sv-zh" ${a}>${zh}</text><text x="${x}" y="${y}" class="sv-both" ${a}>${en === zh ? en : en + ' · ' + zh}</text>`;
+}
+function svDefs(id, color = 'var(--muted)') { return `<defs><marker id="${id}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="${color}"/></marker></defs>`; }
+/** line between two circles, shortened so arrowheads touch the rim */
+function svEdge(a, b, r, mk, color = 'var(--muted)', w = 2, extra = '') {
+  const dx = b[0] - a[0], dy = b[1] - a[1], d = Math.hypot(dx, dy) || 1, ux = dx / d, uy = dy / d;
+  return `<line x1="${a[0] + ux * r}" y1="${a[1] + uy * r}" x2="${b[0] - ux * (r + (mk ? 2 : 0))}" y2="${b[1] - uy * (r + (mk ? 2 : 0))}" stroke="${color}" stroke-width="${w}" ${mk ? `marker-end="url(#${mk})"` : ''} ${extra}/>`;
+}
+function svNode(p, label, fill = 'var(--panel2)', stroke = 'var(--line)', r = 17) {
+  return `<circle cx="${p[0]}" cy="${p[1]}" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="2"/><text x="${p[0]}" y="${p[1] + 5}" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)" font-family="var(--mono)">${label}</text>`;
+}
+function svBadge(x, y, en, zh, color) { return `<g font-size="11.5" font-weight="700" fill="${color}">${svT(x, y, en, zh, 'text-anchor="middle"')}</g>`; }
+
+
+/* =====================================================================
+   ===== PRACTICE FORMATS: bucketGame · flashcards · codeCloze (+ decks)
+   ===================================================================== */
+const DECK = { bucket: {}, flash: {}, cloze: {}, judge: {} };
+
+/* ---------- bucket (sorting) game: click a card, then a box — or drag it ---------- */
+SITE.widgets.bucketGame = (el, id) => {
+  const D = DECK.bucket[id];
+  let pool, placed, sel, wrong, msg;
+  const reset = () => { pool = shuffle(D.items.map((x, i) => i)); placed = D.buckets.map(() => []); sel = null; wrong = 0; msg = ''; draw(); };
+  const chipHTML = (i, cls) => { const it = D.items[i]; return `<span class="chip ${D.code ? 'code' : ''} ${cls || ''}" data-i="${i}" draggable="${cls === 'done' ? 'false' : 'true'}">${D.code ? esc(it[0]) : T(it[0], it[1])}</span>`; };
+  const tryPut = (i, b) => {
+    const it = D.items[i];
+    if (it[2] === b) { pool = pool.filter(x => x !== i); placed[b].push(i); sel = null; msg = `<span class="tag-ok">✓ ${T('Correct', '正确')}</span>` + (it[3] ? ` — ${T(it[3][0], it[3][1])}` : ''); }
+    else { wrong++; sel = i; msg = `<span class="tag-no">✗ ${T('Not', '不是')} “${T(D.buckets[b][0], D.buckets[b][1])}”</span> — ${T('try another box.', '换个格子试试。')}`; }
+    draw(); if (it[2] !== b) { const c = $(`.bk-pool .chip[data-i="${i}"]`, el); if (c) { c.classList.add('bad', 'shake'); } }
+  };
+  const draw = () => {
+    const done = !pool.length;
+    el.innerHTML = `<div class="w"><div class="wt">🧩 ${T(D.t[0], D.t[1])}</div>
+    <div style="font-size:13.5px;color:var(--muted)">${T('Click a card, then click the box it belongs to (or drag it there).', '先点一张卡片，再点它所属的格子（也可以直接拖过去）。')}</div>
+    ${done ? `<div class="tip" style="margin:8px 0"><b>🎉 ${T('All sorted!', '全部分好了！')}</b> ${T('Mistakes', '错误次数')}: <b>${wrong}</b> ${wrong === 0 ? '— ' + T('perfect.', '满分。') : ''} <button class="btn sm ag">${T('Play again', '再玩一次')}</button></div>` : `<div class="bk-pool">${pool.map(i => chipHTML(i, i === sel ? 'sel' : '')).join('')}</div>`}
+    <div class="msg">${msg}</div>
+    <div class="bk-grid">${D.buckets.map((b, k) => `<div class="bucket" data-b="${k}"><div class="bh">${T(b[0], b[1])}</div><div class="bi">${placed[k].map(i => chipHTML(i, 'done')).join('')}</div></div>`).join('')}</div>
+    <div class="row" style="margin-top:6px"><span style="font-size:13px;color:var(--muted)">${T('Left', '剩余')}: ${pool.length} · ${T('mistakes', '错误')}: ${wrong}</span><button class="btn sm rs">${T('Restart', '重来')}</button></div></div>`;
+    $$('.bk-pool .chip', el).forEach(c => {
+      c.onclick = () => { sel = +c.dataset.i === sel ? null : +c.dataset.i; msg = ''; draw(); };
+      c.ondragstart = e => { e.dataTransfer.setData('text/plain', c.dataset.i); sel = +c.dataset.i; };
+    });
+    $$('.bucket', el).forEach(b => {
+      b.onclick = () => { if (sel !== null) tryPut(sel, +b.dataset.b); else { msg = T('Pick a card first.', '先选一张卡片。'); draw(); } };
+      b.ondragover = e => { e.preventDefault(); b.classList.add('over'); };
+      b.ondragleave = () => b.classList.remove('over');
+      b.ondrop = e => { e.preventDefault(); const i = parseInt(e.dataTransfer.getData('text/plain'), 10); if (!isNaN(i)) tryPut(i, +b.dataset.b); };
+    });
+    const rs = $('.rs', el); if (rs) rs.onclick = reset; const ag = $('.ag', el); if (ag) ag.onclick = reset;
+  };
+  reset();
+};
+
+/* ---------- flashcards: flip, then say whether you knew it ---------- */
+SITE.widgets.flashcards = (el, id) => {
+  const D = DECK.flash[id];
+  let queue, known, flipped;
+  const reset = () => { queue = shuffle(D.cards.map((_, i) => i)); known = 0; flipped = false; draw(); };
+  const draw = () => {
+    const tot = D.cards.length;
+    if (!queue.length) { el.innerHTML = `<div class="w"><div class="wt">🃏 ${T(D.t[0], D.t[1])}</div><div class="tip"><b>🎉 ${T(`All ${tot} cards known!`, `${tot} 张卡全部记住了！`)}</b> <button class="btn sm ag">${T('Shuffle & go again', '打乱再来一遍')}</button></div></div>`; $('.ag', el).onclick = reset; return; }
+    const c = D.cards[queue[0]];
+    el.innerHTML = `<div class="w"><div class="wt">🃏 ${T(D.t[0], D.t[1])}</div>
+    <div style="height:8px;background:var(--line);border-radius:6px;overflow:hidden"><div style="height:100%;width:${known / tot * 100}%;background:var(--ok)"></div></div>
+    <div style="font-size:13px;color:var(--muted);margin-top:4px">${T('Known', '已掌握')} ${known}/${tot} · ${T('in this round', '本轮剩余')} ${queue.length}</div>
+    <div class="fc ${flipped ? 'flip' : ''}"><div class="fc-in"><div class="fc-face fc-front"><div>${T(c[0], c[1])}</div><small>${T('Say the answer out loud, then click to flip (or press Space)', '先自己说出答案，再点卡片翻面（或按空格）')}</small></div><div class="fc-face fc-back"><small style="margin:0 0 8px">${T(c[0], c[1])}</small><div>${T(c[2], c[3])}</div></div></div></div>
+    <div class="row" style="justify-content:center">${flipped ? `<button class="btn no">✗ ${T('Not yet — show again later', '还没记住——稍后再来')}</button><button class="btn pri yes">✓ ${T('I knew it', '我会了')}</button>` : `<button class="btn pri fl">${T('Flip', '翻面')}</button>`}</div></div>`;
+    const flip = () => { flipped = !flipped; draw(); };
+    $('.fc', el).onclick = flip; const fl = $('.fl', el); if (fl) fl.onclick = flip;
+    const y = $('.yes', el); if (y) y.onclick = () => { queue.shift(); known++; flipped = false; draw(); };
+    const n = $('.no', el); if (n) n.onclick = () => { queue.push(queue.shift()); flipped = false; draw(); };
+  };
+  el.tabIndex = 0;
+  el.onkeydown = e => { if (e.key === ' ' && queue && queue.length) { e.preventDefault(); flipped = !flipped; draw(); } };
+  reset();
+};
+
+/* ---------- code cloze: fill the blanks in real lecture code ---------- */
+SITE.widgets.codeCloze = (el, id) => {
+  const D = DECK.cloze[id];
+  const answers = [];
+  const lines = dedent(D.code);
+  const body = lines.map((ln, li) => {
+    let h = '', last = 0; const re = /⟦(.*?)⟧/g; let m;
+    while ((m = re.exec(ln))) { h += hlLine(ln.slice(last, m.index)); const alts = m[1].split('¦'); const w = Math.max(...alts.map(a => a.length)) + 1; h += `<input class="cz" data-k="${answers.length}" style="width:${w + 1}ch" autocomplete="off" spellcheck="false">`; answers.push(alts); last = re.lastIndex; }
+    return `<span class="l" data-n="${li + 1}">${h + hlLine(ln.slice(last)) || ' '}</span>`;
+  }).join('');
+  el.innerHTML = `<div class="w"><div class="wt">✍️ ${T(D.t[0], D.t[1])}</div><div style="font-size:13.5px;color:var(--muted)">${T('Type into every highlighted blank (Tab jumps to the next one), then Check. This is how “complete the code” questions look.', '在每个高亮空格里填写（Tab 跳到下一个），然后点检查。考试的“补全代码”题就是这样。')}</div>
+  ${D.given ? `<div class="given">${D.given}</div>` : ''}<pre class="code"><code>${body}</code></pre><div class="row"><button class="btn pri ck">${T('Check', '检查')}</button><button class="btn sw">${T('Show answers', '看答案')}</button><button class="btn rs">${T('Clear', '清空')}</button><span class="sc" style="font-weight:700">${wRecHTML('cz:' + id)}</span></div>${D.note ? `<div class="note" style="font-size:14px">${T(D.note[0], D.note[1])}</div>` : ''}</div>`;
+  const ins = $$('input.cz', el);
+  const norm = s => s.replace(/\s+/g, '');
+  $('.ck', el).onclick = () => { let ok = 0; ins.forEach(inp => { const good = answers[+inp.dataset.k].some(a => norm(a) === norm(inp.value)); inp.classList.toggle('ok', good); inp.classList.toggle('no', !good); if (good) ok++; });
+    wRec('cz:' + id, ok, ins.length, D.t[0]);
+    $('.sc', el).innerHTML = (ok === ins.length ? `<span class="tag-ok">✓ ${ok}/${ins.length} ${T('— all correct!', '——全对！')}</span>` : `<span class="tag-no">${ok}/${ins.length}</span> ${T('— red blanks are wrong', '——红色的空填错了')}`) + ' ' + wRecHTML('cz:' + id); };
+  $('.sw', el).onclick = () => { ins.forEach(inp => { inp.value = answers[+inp.dataset.k][0]; inp.classList.remove('no'); inp.classList.add('ok'); }); $('.sc', el).textContent = ''; };
+  $('.rs', el).onclick = () => { ins.forEach(inp => { inp.value = ''; inp.classList.remove('ok', 'no'); }); $('.sc', el).textContent = ''; };
+  ins.forEach(inp => inp.onkeydown = e => { if (e.key === 'Enter') $('.ck', el).click(); });
+};
+
+
+/* ---------- judge drill: “does this compile / is this valid?” one item at a time ---------- */
+SITE.widgets.judgeDrill = (el, id) => {
+  const D = DECK.judge[id];
+  let order, k, score, last, recd;
+  const reset = () => { order = shuffle(D.items.map((_, i) => i)); k = 0; score = 0; last = ''; recd = false; draw(); };
+  const draw = () => {
+    const lab = D.labels || [['✓ Valid / compiles', '✓ 合法 / 能编译'], ['✗ Error', '✗ 错误']];
+    let h = `<div class="w"><div class="wt">⚖️ ${T(D.t[0], D.t[1])}</div>${k === 0 ? `<div>${wRecHTML('jd:' + id)}</div>` : ''}${D.given ? `<div style="font-size:14px">${T(D.given[0], D.given[1])}</div>` : ''}`;
+    if (k < order.length) {
+      const it = D.items[order[k]];
+      h += `<div style="font-size:13px;color:var(--muted);margin-top:6px">${k + 1} / ${order.length}</div>${codeHTML(it[0])}
+        <div class="row"><button class="btn" data-v="1">${T(lab[0][0], lab[0][1])}</button><button class="btn" data-v="0">${T(lab[1][0], lab[1][1])}</button></div>`;
+    } else { if (!recd) { wRec('jd:' + id, score, order.length, D.t[0]); recd = true; } h += `<div class="${score === order.length ? 'tip' : 'exam'}" style="margin-top:8px"><b>${T('Score', '得分')}: ${score} / ${order.length}</b> <button class="btn sm ag">${T('Again (shuffled)', '再来一遍（打乱）')}</button> ${wRecHTML('jd:' + id)}</div>`; }
+    h += `<div class="msg">${last}</div></div>`;
+    el.innerHTML = h;
+    $$('[data-v]', el).forEach(b => b.onclick = () => {
+      const it = D.items[order[k]], ok = (+b.dataset.v === 1) === !!it[1]; if (ok) score++;
+      last = `${ok ? `<span class="tag-ok">✓ ${T('Right', '对')}</span>` : `<span class="tag-no">✗ ${T('Wrong', '错')}</span>`} — <code style="font-family:var(--mono)">${esc(it[0].split('\n')[0])}${it[0].includes('\n') ? ' …' : ''}</code> ${it[1] ? T('is valid.', '是合法的。') : T('is an error.', '是错误的。')} ${T(it[2], it[3])}`;
+      k++; draw(); });
+    const ag = $('.ag', el); if (ag) ag.onclick = reset;
+  };
+  reset();
+};
+
+
+/* =====================================================================
+   ===== GLOSSARY (tap an underlined English word → Chinese; saved to 生词本)
+   Add words here: 'english word or phrase': '中文'
+   ===================================================================== */
+let GL_RE = null;
+function glRegex() {
+  if (GL_RE) return GL_RE;
+  const ks = Object.keys(SITE.GLOSS || {});
+  GL_RE = ks.length ? new RegExp('\\b(' + ks.sort((a, b) => b.length - a.length).map(k => k.replace(/[.*+?^${}()|[\]\\-]/g, '\\$&')).join('|') + ')\\b', 'gi') : /(?!)/g;
+  return GL_RE;
+}
+const glOn = () => LS.get('gloss', true);
+const GL_SKIP = /^(CODE|PRE|INPUT|TEXTAREA|SCRIPT|STYLE|SELECT|OPTION|text|tspan|svg)$/;
+let glBusy = false;
+function glossify(root) {
+  if (!glOn() || !root || !root.querySelectorAll) return;
+  const targets = root.matches && root.matches('.en') ? [root] : [];
+  root.querySelectorAll('.en').forEach(e => targets.push(e));
+  glBusy = true;
+  targets.forEach(t => {
+    const walker = document.createTreeWalker(t, NodeFilter.SHOW_TEXT, { acceptNode: n => {
+      for (let p = n.parentNode; p && p !== t.parentNode; p = p.parentNode) { if (p.nodeType === 1 && (GL_SKIP.test(p.nodeName) || p.classList.contains('gl') || p.classList.contains('code') || p.classList.contains('i'))) return NodeFilter.FILTER_REJECT; }
+      const RE = glRegex(); RE.lastIndex = 0; return RE.test(n.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT; } });
+    const nodes = []; while (walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(n => {
+      const RE = glRegex(); const s = n.nodeValue, frag = document.createDocumentFragment(); let last = 0, m; RE.lastIndex = 0;
+      while ((m = RE.exec(s))) { frag.appendChild(document.createTextNode(s.slice(last, m.index))); const sp = document.createElement('span'); sp.className = 'gl'; sp.textContent = m[0]; sp.dataset.k = m[0].toLowerCase(); frag.appendChild(sp); last = RE.lastIndex; }
+      frag.appendChild(document.createTextNode(s.slice(last))); n.parentNode.replaceChild(frag, n);
+    });
+  });
+  glBusy = false;
+}
+/* tooltip + save to vocabulary list */
+(function () {
+  const tip = document.createElement('div'); tip.id = 'gltip'; document.body.appendChild(tip);
+  let hideT;
+  const show = (el, saved) => {
+    const k = el.dataset.k, zh = SITE.GLOSS[k]; if (!zh) return;
+    tip.innerHTML = `<b>${esc(el.textContent)}</b> — ${esc(zh)}${saved ? '<small>✓ 已加入生词本 / saved to vocabulary list</small>' : '<small>点击加入生词本 / tap to save</small>'}`;
+    tip.style.display = 'block';
+    const r = el.getBoundingClientRect(); const w = tip.offsetWidth;
+    tip.style.left = Math.max(6, Math.min(window.innerWidth - w - 6, r.left + r.width / 2 - w / 2)) + 'px';
+    tip.style.top = (r.top > 70 ? r.top - tip.offsetHeight - 6 : r.bottom + 6) + 'px';
+    clearTimeout(hideT); if (saved) hideT = setTimeout(() => tip.style.display = 'none', 1800);
+  };
+  document.addEventListener('mouseover', e => { const g = e.target.closest && e.target.closest('.gl'); if (g && glOn()) show(g, false); });
+  document.addEventListener('mouseout', e => { if (e.target.closest && e.target.closest('.gl')) { clearTimeout(hideT); hideT = setTimeout(() => tip.style.display = 'none', 150); } });
+  window.addEventListener('scroll', () => tip.style.display = 'none', { passive: true });
+  // capture phase: a tap on a word must NOT also answer a question / press a button
+  document.addEventListener('click', e => {
+    const g = e.target.closest && e.target.closest('.gl'); if (!g || !glOn()) return;
+    e.stopPropagation(); e.preventDefault();
+    const v = LS.get('vocab', {}); const k = g.dataset.k; v[k] = { zh: SITE.GLOSS[k], n: ((v[k] && v[k].n) || 0) + 1, t: Date.now() }; LS.set('vocab', v);
+    show(g, true); const sb = $('#vocabcount'); if (sb) sb.textContent = Object.keys(v).length;
+  }, true);
+})();
+/* re-glossify whatever gets rendered into the page */
+new MutationObserver(muts => {
+  if (glBusy || !glOn()) return;
+  const roots = new Set(); muts.forEach(m => m.addedNodes.forEach(n => { if (n.nodeType === 1 && !n.classList.contains('gl')) roots.add(n); }));
+  roots.forEach(r => glossify(r));
+}).observe(document.getElementById('page'), { childList: true, subtree: true });
+
+/* vocabulary list page (#/vocab) */
+function renderVocab(page) {
+  const v = LS.get('vocab', {}); const ks = Object.keys(v).sort((a, b) => v[b].t - v[a].t);
+  DECK.flash.__vocab = { t: ['My vocabulary flashcards', '我的生词卡'], cards: ks.map(k => [k, k, v[k].zh, v[k].zh]) };
+  page.innerHTML = `<h1>📒 ${T('Vocabulary list', '生词本')}</h1>
+  ${P('Every underlined English word you <b>tap</b> is saved here. In the exam you cannot look words up — so review this list until every word is instant.', '你在英文里<b>点过</b>的每个带下划线的词都会存到这里。考试时不能查词——所以把这个列表复习到每个词都秒懂。')}
+  ${ks.length ? `<div id="vfc"></div><table class="t"><tr><th>${T('Word', '单词')}</th><th>${T('Meaning', '意思')}</th><th>${T('Looked up', '查过')}</th><th></th></tr>${ks.map(k => `<tr><td><b>${esc(k)}</b></td><td>${esc(v[k].zh)}</td><td>${v[k].n}×</td><td><button class="btn sm" data-del="${esc(k)}">✕</button></td></tr>`).join('')}</table>`
+    : `<div class="note">${T('Empty so far. Switch to <b>EN</b> or <b>双语</b>, then tap any word with a dotted underline.', '还是空的。切到 <b>EN</b> 或<b>双语</b>，然后点任意一个带虚线下划线的单词。')}</div>`}
+  <h2>${T('All words in this site’s glossary', '本站词汇表里的全部单词')} (${Object.keys(SITE.GLOSS).length})</h2>
+  <details class="rv"><summary>${T('Show the full list', '展开完整列表')}</summary><div style="columns:3 220px;font-size:14px">${Object.entries(SITE.GLOSS).sort().map(([k, z]) => `<div><b>${esc(k)}</b> — ${esc(z)}</div>`).join('')}</div></details>`;
+  if (ks.length) SITE.widgets.flashcards($('#vfc', page), '__vocab');
+  $$('[data-del]', page).forEach(b => b.onclick = () => { const v2 = LS.get('vocab', {}); delete v2[b.dataset.del]; LS.set('vocab', v2); renderVocab(page); renderSide('vocab'); });
+}
+
+/** default mock-paper split: proportional to each built chapter's question count, at least 1 each */
+function mockSplit(n) {
+  const chs = SITE.chapters.filter(c => !c.soon && (SITE.banks[c.id] || []).length);
+  const tot = chs.reduce((a, c) => a + SITE.banks[c.id].length, 0) || 1; const per = {};
+  chs.forEach(c => per[c.id] = Math.max(1, Math.round(n * SITE.banks[c.id].length / tot)));
+  return per;
+}
+/* =====================================================================
+   ===== MOCK EXAM — random mixed paper, answers revealed only on submit
+   ===================================================================== */
+SITE.mockRender = page => {
+  const plans = { quick: { n: 15, min: 25, per: (SITE.course.mock && SITE.course.mock.quick) || mockSplit(15) },
+                  full: { n: 30, min: 50, per: (SITE.course.mock && SITE.course.mock.full) || mockSplit(30) } };
+  const best = LS.get('mockbest', null);
+  page.innerHTML = `<h1>📝 ${T('Mock exam', '模拟考')}</h1>
+  ${P('A random paper drawn from every chapter, including freshly generated 🎲 tracing questions. <b>No feedback until you submit</b> — like the real exam. Wrong answers go into the mistake bank.', '从每一章随机抽题，包括现场生成的 🎲 追踪题。<b>交卷前不显示对错</b>——和真实考试一样。答错的题会进错题本。')}
+  <div class="grid2"><div class="card"><b>${T('Quick paper', '短卷')}</b><br>15 ${T('questions', '题')} · ~25 min<div class="row"><button class="btn pri" data-p="quick">${T('Start', '开始')}</button></div></div>
+  <div class="card"><b>${T('Full paper', '整卷')}</b><br>30 ${T('questions', '题')} · ~50 min<div class="row"><button class="btn pri" data-p="full">${T('Start', '开始')}</button></div></div></div>
+  ${best ? `<div class="note">${T('Best score so far', '历史最高')}: <b>${best}%</b></div>` : ''}
+  <div id="mockarea"></div>`;
+  $$('[data-p]', page).forEach(b => b.onclick = () => start(plans[b.dataset.p]));
+
+  function start(plan) {
+    const qs = [];
+    Object.entries(plan.per).forEach(([ch, k]) => {
+      const bank = SITE.banks[ch] || []; const gens = shuffle(bank.filter(q => q.t === 'gen')), fixed = shuffle(bank.filter(q => q.t !== 'gen'));
+      const nGen = gens.length ? Math.min(gens.length, Math.ceil(k / 2)) : 0;
+      gens.slice(0, nGen).forEach(q => qs.push(q)); fixed.slice(0, k - nGen).forEach(q => qs.push(q));
+    });
+    const area = $('#mockarea'); area.innerHTML = '';
+    $$('[data-p]', page).forEach(b => b.disabled = true);
+    const t0 = Date.now(), results = new Map();
+    const bar = document.createElement('div'); bar.className = 'qbar'; bar.style.position = 'sticky'; bar.style.top = '60px'; bar.style.zIndex = 5;
+    area.appendChild(bar);
+    const els = [];
+    qs.forEach((q, i) => { const el = renderQuestion(q, i + 1, { deferred: true, showCh: true, onAnswer: (ok) => { results.set(i, ok); upd(); } }); el.dataset.ch = q.ch; els.push(el); area.appendChild(el); });
+    const sub = document.createElement('div'); sub.className = 'row'; sub.style.justifyContent = 'center';
+    sub.innerHTML = `<button class="btn pri" style="font-size:16px;padding:10px 26px">${T('Submit paper', '交卷')}</button>`; area.appendChild(sub);
+    let timer = setInterval(upd, 1000), submitted = false;
+    function upd() {
+      if (!document.body.contains(bar)) return clearInterval(timer);
+      const sec = Math.floor((Date.now() - t0) / 1000), left = plan.min * 60 - sec;
+      bar.innerHTML = `<b>${T('Mock exam', '模拟考')}</b><span>${T('Answered', '已答')} ${results.size}/${qs.length}</span><span style="flex:1"></span><span style="font-family:var(--mono);color:${left < 0 ? 'var(--bad)' : 'inherit'}">⏱ ${left < 0 ? '+' : ''}${Math.floor(Math.abs(left) / 60)}:${String(Math.abs(left) % 60).padStart(2, '0')}</span>`;
+    }
+    upd();
+    $('button', sub).onclick = () => {
+      if (submitted) return;
+      if (results.size < qs.length && !sub.dataset.warned) { sub.dataset.warned = 1; sub.insertAdjacentHTML('afterbegin', `<div class="warn" style="width:100%">${T(`${qs.length - results.size} question(s) unanswered. Click Submit again to hand in anyway.`, `还有 ${qs.length - results.size} 题没答。再点一次交卷即可强制提交。`)}</div>`); return; }
+      submitted = true; clearInterval(timer); els.forEach(e => e.dataset.done = 1);
+      els.forEach(e => { if (e._reveal) e._reveal(); else { e.classList.add('wrong'); $('.res', e).innerHTML = `<div class="fb no">${T('Not answered', '未作答')}</div>`; } });
+      const by = {}; qs.forEach((q, i) => { const r = by[q.ch] = by[q.ch] || { n: 0, ok: 0 }; r.n++; if (results.get(i)) r.ok++; });
+      const total = [...results.values()].filter(Boolean).length, pct = Math.round(total / qs.length * 100);
+      if (best === null || pct > best) LS.set('mockbest', pct);
+      const mins = Math.round((Date.now() - t0) / 60000);
+      const sum = document.createElement('div'); sum.className = 'card';
+      sum.innerHTML = `<h2 style="margin-top:0">${T('Result', '成绩')}: ${total} / ${qs.length} (${pct}%)</h2><p>${T('Time used', '用时')}: ${mins} min</p>
+      <table class="t"><tr><th>${T('Chapter', '章节')}</th><th>${T('Score', '得分')}</th></tr>${Object.entries(by).map(([ch, r]) => { const c = SITE.chapters.find(x => x.id === ch); return `<tr><td>${c.num} ${T(c.t[0], c.t[1])}</td><td style="color:${r.ok / r.n < .6 ? 'var(--bad)' : 'var(--ok)'}"><b>${r.ok}/${r.n}</b></td></tr>`; }).join('')}</table>
+      <p>${T('Red chapters = go back to that chapter’s 🎲 drills. Then redo the', '红色的章节 = 回到那一章刷 🎲 练习。然后去做')} <a href="#/mistakes">📕 ${T('mistake bank', '错题本')}</a>.</p>`;
+      area.insertBefore(sum, area.firstChild.nextSibling);
+      sub.remove(); bar.innerHTML = `<b>${T('Submitted', '已交卷')}</b> · ${total}/${qs.length}`;
+      window.scrollTo({ top: sum.offsetTop - 70, behavior: 'smooth' });
+      renderSide('mock');
+    };
+  }
+};
+
+
+/* =====================================================================
+   HOME PAGE — driven by SITE.course (see templates/course/course.js)
+   ===================================================================== */
+SITE.homeHTML = () => {
+  const C = SITE.course, nQ = SITE.allQs().length, nW = LS.get('wrong', []).length;
+  const cards = SITE.chapters.map(ch => {
+    const p = Math.round(chapterProgress(ch) * 100), first = ch.sections && ch.sections[0];
+    return `<a class="chcard" href="${first ? '#/' + sectionKey(ch, first) : '#/'}"><div class="n">${ch.num}${ch.soon ? ' · ' + T('coming soon', '制作中') : ''}</div><b>${T(ch.t[0], ch.t[1])}</b><div style="font-size:13px;color:var(--muted)">${(ch.sections || []).length} ${T('sections', '节')} · ${(SITE.banks[ch.id] || []).length} ${T('questions', '题')}</div><div class="bar"><i style="width:${p}%"></i></div></a>`;
+  }).join('');
+  const t = C.title || ['Study site', '复习网站'];
+  let h = `<div class="hero"><h1>${T(t[0], t[1])}</h1><div>${T('Interactive notes, visualizers and ' + nQ + ' practice questions built from the lecture slides.', '根据课件制作的交互式笔记、可视化工具和 ' + nQ + ' 道练习题。')}</div></div>
+  <div class="card"><b>${T('How to use this page', '怎么用这个网页')}</b>${L([
+    ['Switch language top-right: <b>EN</b> (exam language), <b>中文</b>, or <b>双语</b> (both). In EN, tap a dotted word for its Chinese meaning; it is saved to the <b>📒 vocabulary list</b>.', '右上角切换语言：<b>EN</b>（考试语言）、<b>中文</b>、<b>双语</b>。EN 模式下点带虚线的词看中文，会自动存进 <b>📒 生词本</b>。'],
+    ['Each section = picture & hands-on widget → short notes → “Check yourself” questions. Do the questions; reading alone will not stick.', '每节 = 图和交互 → 简短笔记 → “自测”题。一定要做题，光看记不住。'],
+    ['Not sure? Press <b>🤷 Don’t know</b> instead of guessing — it shows the answer and saves the question to the <b>📕 mistake bank</b>.', '不确定就按 <b>🤷 不会</b>，别蒙——会显示答案并把题放进 <b>📕 错题本</b>。'],
+    ['🎲 questions are randomly generated — press “New question” for unlimited practice. The last section of each chapter is a test with NEW questions.', '带 🎲 的题是随机生成的——点“换一题”可以无限练。每章最后一节是全新题目的测试。'],
+    ['Progress is saved in this browser only. Want help? <a href="#/ai">🤖 Hand over to AI</a> copies a report of your results that any AI tutor can analyse. Keyboard: ← / → for previous / next section.', '进度只保存在当前浏览器。需要帮忙？<a href="#/ai">🤖 交给 AI</a> 会把你的做题情况复制成一份报告，任何 AI 都能据此帮你分析。键盘 ← / → 切换上一节/下一节。']])}</div>
+  ${focusTable()}
+  <h2>${T('Chapters', '章节')}</h2><div class="chgrid">${cards}</div>
+  ${nW ? `<div class="exam" style="margin-top:14px"><b class="h">${T('Mistake bank', '错题本')}</b>${T(`You have <b>${nW}</b> question(s) to redo.`, `你有 <b>${nW}</b> 道错题待重做。`)} <a href="#/mistakes">${T('Go →', '去做 →')}</a></div>` : ''}`;
+  if (C.plan && C.plan.rows && C.plan.rows.length) {
+    h += `<h2>${T(C.plan.title[0], C.plan.title[1])}</h2><table class="t"><tr><th>${T('When', '时间')}</th><th>${T('Do', '内容')}</th><th>${T('Why', '理由')}</th></tr>` +
+      C.plan.rows.map(r => `<tr>${r.map(c => `<td>${Array.isArray(c) ? T(c[0], c[1]) : c}</td>`).join('')}</tr>`).join('') + `</table>`;
+  }
+  (C.homeNotes || []).forEach(n => h += BOX(n[0], n[1], n[2]));
+  if (C.credits) h += `<p style="font-size:13px;color:var(--muted);margin-top:30px">${T(C.credits[0], C.credits[1])}</p>`;
+  return h;
+};
+
+</script>
+<script>
+/* ===== ../../addons/cs-algorithms/sim.js ===== */
+/* =====================================================================
+   ===== Exact simulators of the classic algorithms used by the answer-sheet drills
+   Pure functions (no DOM) so they can be checked in Node.
+   ===================================================================== */
+const T1 = {};
+
+/** partition() (first-element pivot, the classic textbook version): pivot = list[pivotIdx] (default first), bottom = first, top = last.
+ *  Each loop iteration: top moves left while > pivot, bottom moves right while < pivot,
+ *  then swap if bottom < top, else return top.  Returns {steps, cut, a, pivot}. */
+T1.partition = (arr, first = 0, last = arr.length - 1, pivotIdx = first) => {
+  const a = arr.slice(), pivot = a[pivotIdx], steps = [];
+  let bottom = first, top = last, guard = 0;
+  while (true) {
+    if (++guard > 200) throw new Error('DUP');
+    while (a[top] > pivot) top--;
+    while (a[bottom] < pivot) bottom++;
+    if (bottom < top) {
+      const x = a[bottom], y = a[top]; a[bottom] = y; a[top] = x;
+      steps.push({ bottom, top, swap: [x, y], a: a.slice() });
+    } else { steps.push({ bottom, top, cut: top, a: a.slice() }); return { steps, cut: top, a, pivot, first, last }; }
+  }
+};
+
+/** merge(list, first, mid, last) trace rows in the usual exam-table layout:
+ *  each row = indices/values compared (or '-' if that half is used up) and tempArray after the move. */
+T1.mergeRows = (list, first, mid, last) => {
+  let f1 = first, f2 = mid + 1; const tmp = [], rows = [], n = last - first + 1;
+  while (tmp.length < n) {
+    const v1 = f1 <= mid ? list[f1] : null, v2 = f2 <= last ? list[f2] : null;
+    const row = { f1, f2, v1, v2 };
+    if (v2 === null || (v1 !== null && v1 <= v2)) { tmp.push(v1); f1++; } else { tmp.push(v2); f2++; }
+    row.tmp = tmp.slice(); rows.push(row);
+  }
+  return rows;
+};
+
+/** merge sort recursion tree (mid = (first + last) / 2, left half includes mid) */
+T1.mergeTree = (arr) => {
+  const a = arr.slice(), calls = [];
+  const ms = (f, l, d) => {
+    const node = { f, l, d, before: a.slice(f, l + 1) }; calls.push(node);
+    if (f < l) { const m = Math.floor((f + l) / 2); node.m = m; ms(f, m, d + 1); ms(m + 1, l, d + 1);
+      const L = a.slice(f, m + 1), R = a.slice(m + 1, l + 1), out = []; let i = 0, j = 0;
+      while (i < L.length || j < R.length) out.push(j >= R.length || (i < L.length && L[i] <= R[j]) ? L[i++] : R[j++]);
+      out.forEach((v, k) => a[f + k] = v); node.after = out; }
+    else node.after = node.before.slice();
+  };
+  ms(0, a.length - 1, 0);
+  return { calls, sorted: a };
+};
+
+/** sort passes in exam-table form.
+ *  alg: bubble (basic: n−1 passes, compares 0..n−pass−1), ibubble (stops after a pass with no swap),
+ *  bubbleFixed (variant: every pass compares x = 0..n−2),
+ *  selection (largest → index last, swaps every pass even with itself),
+ *  iselection (improved: no swap when largest already at last),
+ *  selmin (variant: minIndex → front, swaps every pass),
+ *  insertion / insertionDesc.
+ *  Returns [{pass, a, cmp, swp}] */
+T1.passes = (arr, alg) => {
+  const a = arr.slice(), n = a.length, out = [];
+  const sw = (i, j) => { const t = a[i]; a[i] = a[j]; a[j] = t; };
+  if (alg === 'bubble' || alg === 'ibubble' || alg === 'bubbleFixed') {
+    for (let p = 1; p <= n - 1; p++) {
+      let cmp = 0, swp = 0; const end = alg === 'bubbleFixed' ? n - 1 : n - p;
+      for (let x = 0; x < end; x++) { cmp++; if (a[x] > a[x + 1]) { sw(x, x + 1); swp++; } }
+      out.push({ pass: p, a: a.slice(), cmp, swp });
+      if (alg === 'ibubble' && swp === 0) break;
+    }
+  } else if (alg === 'selection' || alg === 'iselection') {
+    for (let last = n - 1, p = 1; last >= 1; last--, p++) {
+      let li = 0, cmp = 0;
+      for (let q = 1; q <= last; q++) { cmp++; if (a[q] > a[li]) li = q; }
+      let swp = 0;
+      if (alg === 'selection' || li !== last) { sw(li, last); swp = 1; }
+      out.push({ pass: p, a: a.slice(), cmp, swp, li, last });
+    }
+  } else if (alg === 'selmin') {
+    for (let i = 0; i < n - 1; i++) {
+      let mi = i, cmp = 0;
+      for (let j = i + 1; j < n; j++) { cmp++; if (a[j] < a[mi]) mi = j; }
+      sw(i, mi); out.push({ pass: i + 1, a: a.slice(), cmp, swp: 1, mi });
+    }
+  } else if (alg === 'insertion' || alg === 'insertionDesc') {
+    const before = alg === 'insertion' ? (x, y) => x > y : (x, y) => x < y;
+    for (let k = 1; k < n; k++) {
+      const v = a[k]; let j = k, cmp = 0, shift = 0;
+      while (j > 0) { cmp++; if (before(a[j - 1], v)) { a[j] = a[j - 1]; j--; shift++; } else break; }
+      a[j] = v; out.push({ pass: k, a: a.slice(), cmp, swp: shift });
+    }
+  }
+  return out;
+};
+
+/** bubble trace table: pass 1..n−1, x 0..n−2 (no shrinking), one row per comparison */
+T1.bubbleRows = (arr) => {
+  const a = arr.slice(), n = a.length, rows = [];
+  for (let p = 1; p < n; p++) for (let x = 0; x < n - 1; x++) {
+    const l = a[x], r = a[x + 1], gt = l > r;
+    if (gt) { a[x] = r; a[x + 1] = l; }
+    rows.push({ p, x, l, r, gt, a: a.slice() });
+  }
+  return rows;
+};
+
+/** small recursive functions for tracing drills: each returns the list of frames [{args, next, ret}] */
+T1.REC = {
+  addDown: { sig: 'int addDown(int x, int y)', code: ['if (x == 0)', '    return y;', 'else', '    return addDown(x - 1, x + y);'],
+        step: ([x, y]) => x === 0 ? { base: y } : { next: [x - 1, x + y] } },
+  sum: { sig: 'int sum(int n)', code: ['if (n == 0)', '    return 0;', 'else', '    return n + sum(n / 10);'],
+         step: ([n]) => n === 0 ? { base: 0 } : { next: [Math.trunc(n / 10)], comb: r => n + r } },
+  meet: { sig: 'int meet(int x, int y)', code: ['if (x < y)', '    return meet(x + 1, y - 1);', 'else', '    return x + y;'],
+              step: ([x, y]) => x < y ? { next: [x + 1, y - 1] } : { base: x + y } },
+  power: { sig: 'int power(int x, int y)', code: ['if (y != 0)', '    return x * power(x, y - 1);', 'else', '    return 1;'],
+                step: ([x, y]) => y !== 0 ? { next: [x, y - 1], comb: r => x * r } : { base: 1 } },
+  fact: { sig: 'int fact(int x)', code: ['if (x == 1)', '    return 1;', 'else', '    return x * fact(x - 1);'],
+        step: ([x]) => x === 1 ? { base: 1 } : { next: [x - 1], comb: r => x * r } },
+  triple: { sig: 'int triple(int d)', code: ['if (d == 0)', '    return 1;', 'else', '    return 3 * triple(d - 2);'],
+             step: ([d]) => d === 0 ? { base: 1 } : { next: [d - 2], comb: r => 3 * r } },
+  digits: { sig: 'int digits(int n)', code: ['if (n < 10)', '    return n;', 'else', '    return n % 10 + digits(n / 10);'],
+            step: ([n]) => n < 10 ? { base: n } : { next: [Math.trunc(n / 10)], comb: r => n % 10 + r } }
+};
+T1.recFrames = (fn, args) => {
+  const F = T1.REC[fn], frames = []; let cur = args;
+  for (let k = 0; k < 40; k++) {
+    const s = F.step(cur); frames.push({ args: cur, ...s });
+    if ('base' in s) break; cur = s.next;
+  }
+  if (!('base' in frames[frames.length - 1])) throw new Error('no base case reached');
+  for (let i = frames.length - 1; i >= 0; i--) { const f = frames[i]; f.ret = 'base' in f ? f.base : (f.comb ? f.comb(frames[i + 1].ret) : frames[i + 1].ret); }
+  return frames;
+};
+
+/** print-order functions (head vs tail recursion) — return the printed text */
+T1.PRINT = {
+  after: { code: n => `void func(int n) {\n    if (n > 0) {\n        func(n - 1);\n        cout << n << " ";\n    }\n}`, run: n => { const o = []; const f = k => { if (k > 0) { f(k - 1); o.push(k); } }; f(n); return o.join(' '); } },
+  before: { code: n => `void func(int n) {\n    if (n > 0) {\n        cout << n << " ";\n        func(n - 1);\n    }\n}`, run: n => { const o = []; const f = k => { if (k > 0) { o.push(k); f(k - 1); } }; f(n); return o.join(' '); } },
+  count: { code: n => `void count(int n) {\n    if (n > 0) count(n - 1);\n    cout << n << " ";\n}`, run: n => { const o = []; const f = k => { if (k > 0) f(k - 1); o.push(k); }; f(n); return o.join(' '); } },
+};
+
+/** step-count expression evaluator: accepts things like "2(n-1) + 3(n-1)log4n", "n²+2n", "1+3(1+log₂n)" */
+T1.evalExpr = (s, n) => {
+  let e = String(s).toLowerCase().replace(/\s+/g, '')
+    .replace(/[−–]/g, '-').replace(/[·×]/g, '*').replace(/²/g, '^2').replace(/³/g, '^3')
+    .replace(/₂/g, '2').replace(/₃/g, '3').replace(/₄/g, '4').replace(/lg/g, 'log2');
+  if (!/^[0-9n+\-*/^().logq]*$/.test(e)) return NaN;
+  e = e.replace(/log(\d)\(n\)/g, 'L$1').replace(/log(\d)n/g, 'L$1').replace(/log\(n\)/g, 'L2').replace(/logn/g, 'L2');   // log2n → L2
+  // tokens: numbers, n, L<base>, operators, parentheses
+  const toks = e.match(/\d+(\.\d+)?|n|L\d|[+\-*/^()]/g); if (!toks || toks.join('') !== e) return NaN;
+  const out = [];
+  const val = t => /^(\d|n|L)/.test(t);
+  toks.forEach((t, i) => {   // implicit multiplication: 2n, 3(n-1), n log2n, (n-1)(n+1)
+    const prev = toks[i - 1];
+    if (i && (val(prev) || prev === ')') && (val(t) || t === '(')) out.push('*');
+    out.push(t);
+  });
+  const js = out.join('').replace(/L(\d)/g, (m, b) => `(Math.log(n)/Math.log(${b}))`).replace(/\^/g, '**');
+  try { const v = Function('n', `return ${js};`)(n); return typeof v === 'number' ? v : NaN; } catch (err) { return NaN; }
+};
+T1.sameExpr = (a, b) => [16, 64, 256, 4096].every(n => { const x = T1.evalExpr(a, n), y = T1.evalExpr(b, n); return isFinite(x) && isFinite(y) && Math.abs(x - y) < 1e-6 * Math.max(1, Math.abs(y)); });
+
+if (typeof module !== 'undefined') module.exports = T1;
+
+</script>
+<script>
+/* ===== ../../addons/cs-algorithms/sortviz.js ===== */
+/* =====================================================================
+   ===== Sorting visualizer: step generators that follow the listings below line by line
+   ===================================================================== */
+const SORT_CODE = {
+bubble: `void BubbleSort(int data[], int listSize)
+{  int pass, hold;
+   for (pass = 1; pass < listSize; pass++)
+   {  // each pass pushes the biggest remaining value to the back
+      for (int x = 0; x < listSize - pass; x++)
+      {  // look at one pair of neighbours
+         if (data[x] > data[x+1])
+         {  // wrong order -> exchange them
+            hold = data[x];
+            data[x] = data[x+1];
+            data[x+1] = hold;
+         }
+      }
+   }
+}`,
+ibubble: `void BubbleSort(int data[], int n)
+{  int hold;
+   bool sorted = false;            // becomes true after a pass with no exchange
+   for (int pass = 1; (pass < n) && !sorted; ++pass)
+   {  sorted = true;               // optimistic until an exchange happens
+      for (int x = 0; x < n - pass; ++x)
+      {  if (data[x] > data[x+1])
+         {  hold = data[x];        // exchange the pair
+            data[x] = data[x+1];
+            data[x+1] = hold;
+            sorted = false;        // an exchange: we need another pass
+         }
+      }
+   }
+}`,
+selection: `void SelectionSort(int Data[], int n)
+{
+   for (int last = n - 1; last >= 1; --last)
+   {  // find the biggest value in Data[0..last]
+      int largestIndex = 0;        // start by guessing index 0
+      for (int p = 1; p <= last; ++p)
+      {
+         if (Data[p] > Data[largestIndex])
+            largestIndex = p;
+      }
+      swap(Data[largestIndex], Data[last]);   // park it at the back
+   }
+}`,
+insertion: `void InsertionSort(int data[], int n)
+{  int item;
+   int pass, insertIndex;
+   for (pass = 1; pass < n; pass++)
+   {
+      item = data[pass];           // next value to place
+      insertIndex = pass;
+      while ((insertIndex > 0) && (data[insertIndex-1] > item))
+      {  // bigger neighbour on the left: move it one step right
+         data[insertIndex] = data[insertIndex-1];
+         insertIndex--;
+      }
+      data[insertIndex] = item;    // drop the item into the gap
+   }
+}`,
+merge: `void mergeSort(int theArray[], int first, int last)
+{
+   if (first < last)
+   {
+      int mid = (first + last) / 2;        // split point
+      mergeSort(theArray, first, mid);     // left part
+      mergeSort(theArray, mid + 1, last);  // right part
+      merge(theArray, first, mid, last);   // combine both sorted parts
+   }
+}
+void merge(int theArray[], int first, int mid, int last)
+{
+   int tempArray[MAX_SIZE];
+   int first1 = first, last1 = mid, first2 = mid + 1, last2 = last;
+   int index = first1;
+   for (; (first1 <= last1) && (first2 <= last2); ++index)
+      if (theArray[first1] < theArray[first2])
+         tempArray[index] = theArray[first1++];
+      else
+         tempArray[index] = theArray[first2++];
+   for (; first1 <= last1; ++first1, ++index)    // copy what is left on the left
+      tempArray[index] = theArray[first1];
+   for (; first2 <= last2; ++first2, ++index)    // copy what is left on the right
+      tempArray[index] = theArray[first2];
+   for (index = first; index <= last; ++index)   // write the result back
+      theArray[index] = tempArray[index];
+}`,
+quick: `void quickSort(int T[], int first, int last)
+{
+   int cut;
+   if (first < last)
+   {
+      cut = partition(T, first, last);
+      quickSort(T, first, cut);
+      quickSort(T, cut + 1, last);
+   }
+}
+int partition(int T[], int first, int last)
+{
+   int pivot = T[first];               // first value is the pivot
+   int bottom = first, top = last;
+   bool going = true;  int cutPoint, temp;
+   while (going)
+   {
+      while (T[top] > pivot)    top--;      // top walks left past bigger values
+      while (T[bottom] < pivot) bottom++;   // bottom walks right past smaller values
+      if (bottom < top)
+      {  temp = T[bottom]; T[bottom] = T[top]; T[top] = temp;  }
+      else
+      {  going = false; cutPoint = top;  }
+   }
+   return cutPoint;
+}`
+};
+const ALG_NAME = { bubble: 'Bubble sort', ibubble: 'Improved bubble sort', selection: 'Selection sort', insertion: 'Insertion sort', merge: 'Merge sort', quick: 'Quick sort' };
+const ALG_ZH = { bubble: '冒泡排序', ibubble: '改进冒泡排序', selection: '选择排序', insertion: '插入排序', merge: '归并排序', quick: '快速排序' };
+
+function sortRun(alg, input) {
+  const a = input.slice(), n = a.length, st = [], log = [], c = { cmp: 0, swp: 0, shf: 0 };
+  let done = [], err = null;
+  const push = o => { if (st.length > 6000) throw new Error('too many steps'); st.push(Object.assign({ a: a.slice(), done: done.slice(), c: Object.assign({}, c) }, o)); };
+  const L = (en, zh) => [en, zh];
+  const sw = (i, j) => { const t = a[i]; a[i] = a[j]; a[j] = t; };
+  const range = (lo, hi) => { const r = []; for (let i = lo; i <= hi; i++) r.push(i); return r; };
+  try {
+  push({ line: [], msg: L('Start — unsorted list', '开始——未排序列表') });
+  if (alg === 'bubble' || alg === 'ibubble') {
+    const imp = alg === 'ibubble'; const lc = imp ? 7 : 7, ls = imp ? [8, 9, 10, 11] : [9, 10, 11], lp = imp ? 4 : 3;
+    let sorted = false;
+    for (let pass = 1; pass < n && !sorted; pass++) {
+      if (imp) sorted = true; let swaps = 0;
+      push({ line: [lp], msg: L(`Pass ${pass}: compare adjacent pairs from index 0 to ${n - pass - 1}`, `第 ${pass} 趟：比较下标 0 到 ${n - pass - 1} 的相邻对`) });
+      for (let x = 0; x < n - pass; x++) {
+        c.cmp++; push({ cmp: [x, x + 1], line: [lc], msg: L(`Compare data[${x}]=${a[x]} and data[${x + 1}]=${a[x + 1]}${a[x] > a[x + 1] ? ' → out of order' : ' → OK, no swap'}`, `比较 data[${x}]=${a[x]} 与 data[${x + 1}]=${a[x + 1]}${a[x] > a[x + 1] ? ' → 顺序反了' : ' → 没问题，不交换'}`) });
+        if (a[x] > a[x + 1]) { sw(x, x + 1); c.swp++; swaps++; if (imp) sorted = false; push({ swp: [x, x + 1], line: ls, msg: L(`Swap → ${a[x]}, ${a[x + 1]}`, `交换 → ${a[x]}, ${a[x + 1]}`) }); }
+      }
+      done = range(n - pass, n - 1);
+      log.push({ k: st.length, label: L(`After pass ${pass}`, `第 ${pass} 趟后`), a: a.slice(), note: L(`${n - pass} comparisons, ${swaps} swaps${imp && sorted ? ' → no swap, list is sorted, STOP' : ''}`, `${n - pass} 次比较，${swaps} 次交换${imp && sorted ? ' → 没有交换，已排好，停止' : ''}`) });
+      push({ line: [lp], msg: L(`End of pass ${pass}: ${a[n - pass]} is in its final position${imp && sorted ? '. No swaps in this pass → sorted = true → stop early!' : ''}`, `第 ${pass} 趟结束：${a[n - pass]} 已在最终位置${imp && sorted ? '。本趟没有交换 → sorted = true → 提前结束！' : ''}`) });
+    }
+    done = range(0, n - 1);
+  } else if (alg === 'selection') {
+    for (let last = n - 1; last >= 1; last--) {
+      let li = 0; push({ ptr: { last, largest: li }, line: [5], msg: L(`last = ${last}: assume largest is at index 0 (${a[0]})`, `last = ${last}：先假设最大值在下标 0（${a[0]}）`) });
+      for (let p = 1; p <= last; p++) {
+        c.cmp++; push({ cmp: [p, li], ptr: { last, largest: li }, line: [8], msg: L(`Compare Data[${p}]=${a[p]} > Data[largestIndex=${li}]=${a[li]}?`, `比较 Data[${p}]=${a[p]} > Data[largestIndex=${li}]=${a[li]}？`) });
+        if (a[p] > a[li]) { li = p; push({ ptr: { last, largest: li }, line: [9], msg: L(`Yes → largestIndex = ${p}`, `是 → largestIndex = ${p}`) }); }
+      }
+      sw(li, last); c.swp++;
+      push({ swp: [li, last], ptr: { last, largest: li }, line: [11], msg: li === last ? L(`swap(Data[${li}], Data[${last}]) — same position! This basic version swaps anyway (a wasted swap).`, `swap(Data[${li}], Data[${last}])——同一位置！基础版照样交换（白交换）。`) : L(`Swap largest ${a[last]} into position ${last}`, `把最大值 ${a[last]} 换到位置 ${last}`) });
+      done = range(last, n - 1);
+      log.push({ k: st.length, label: L(`After pass ${n - last} (last = ${last})`, `第 ${n - last} 趟后（last = ${last}）`), a: a.slice(), note: L(`${last} comparisons, largestIndex = ${li}`, `${last} 次比较，largestIndex = ${li}`) });
+    }
+    done = range(0, n - 1);
+  } else if (alg === 'insertion') {
+    for (let pass = 1; pass < n; pass++) {
+      const item = a[pass]; let ii = pass, cmps = 0;
+      done = range(0, pass - 1);
+      push({ ptr: { item: pass }, line: [6, 7], msg: L(`Pass ${pass}: item = data[${pass}] = ${item}; sorted region is [0..${pass - 1}]`, `第 ${pass} 趟：item = data[${pass}] = ${item}；已排序区为 [0..${pass - 1}]`), item });
+      while (ii > 0) {
+        c.cmp++; cmps++;
+        push({ cmp: [ii - 1, ii], line: [8], msg: L(`Compare data[${ii - 1}]=${a[ii - 1]} > item ${item}?${a[ii - 1] > item ? ' Yes' : ' No → stop'}`, `比较 data[${ii - 1}]=${a[ii - 1]} > item ${item}？${a[ii - 1] > item ? ' 是' : ' 否 → 停'}`), item });
+        if (a[ii - 1] > item) { a[ii] = a[ii - 1]; c.shf++; ii--; push({ swp: [ii, ii + 1], line: [10, 11], msg: L(`Shift ${a[ii + 1]} right to index ${ii + 1}`, `把 ${a[ii + 1]} 右移到下标 ${ii + 1}`), item, hole: ii }); }
+        else break;
+      }
+      a[ii] = item; done = range(0, pass);
+      push({ line: [13], msg: L(`Insert ${item} at index ${ii}`, `把 ${item} 插到下标 ${ii}`), ins: ii });
+      log.push({ k: st.length, label: L(`After pass ${pass}`, `第 ${pass} 趟后`), a: a.slice(), note: L(`inserted ${item}; ${cmps} comparison(s)`, `插入 ${item}；${cmps} 次比较`) });
+    }
+    done = range(0, n - 1);
+  } else if (alg === 'merge') {
+    const ms = (f, l) => {
+      push({ range: [f, l], line: [3], msg: L(`mergeSort(theArray, ${f}, ${l})${f < l ? '' : ' — one item, nothing to do'}`, `mergeSort(theArray, ${f}, ${l})${f < l ? '' : '——只有一项，什么都不做'}`) });
+      if (f < l) {
+        const mid = Math.floor((f + l) / 2);
+        push({ range: [f, l], split: mid, line: [5], msg: L(`mid = (${f} + ${l}) / 2 = ${mid} → left [${f}..${mid}], right [${mid + 1}..${l}]`, `mid = (${f} + ${l}) / 2 = ${mid} → 左 [${f}..${mid}]，右 [${mid + 1}..${l}]`) });
+        ms(f, mid); ms(mid + 1, l);
+        const tmp = []; let i = f, j = mid + 1;
+        while (i <= mid && j <= l) {
+          c.cmp++; push({ range: [f, l], split: mid, cmp: [i, j], tmp: tmp.slice(), tf: f, line: [17], msg: L(`merge: ${a[i]} < ${a[j]}? → take ${a[i] < a[j] ? a[i] : a[j]}`, `合并：${a[i]} < ${a[j]}？→ 取 ${a[i] < a[j] ? a[i] : a[j]}`) });
+          tmp.push(a[i] < a[j] ? a[i++] : a[j++]);
+        }
+        while (i <= mid) tmp.push(a[i++]); while (j <= l) tmp.push(a[j++]);
+        push({ range: [f, l], split: mid, tmp: tmp.slice(), tf: f, line: [21, 22, 23, 24], msg: L('Copy the remaining items into tempArray', '把剩余项复制进 tempArray') });
+        for (let k = 0; k < tmp.length; k++) a[f + k] = tmp[k];
+        push({ range: [f, l], line: [25, 26], msg: L(`Copy tempArray back → [${f}..${l}] is now sorted`, `把 tempArray 复制回原数组 → [${f}..${l}] 已有序`) });
+        log.push({ k: st.length, label: L(`merge(${f}, ${mid}, ${l})`, `merge(${f}, ${mid}, ${l})`), a: a.slice(), hl: [f, l], note: L(`[${a.slice(f, mid + 1 - 0).length ? '' : ''}${tmp.join(' ')}]`, `[${tmp.join(' ')}]`) });
+      }
+    };
+    ms(0, n - 1); done = range(0, n - 1);
+  } else if (alg === 'quick') {
+    let calls = 0;
+    const part = (f, l) => {
+      const pivot = a[f]; let b = f, t = l;
+      push({ range: [f, l], ptr: { pivot: f, bottom: b, top: t }, line: [13, 14], msg: L(`partition(T, ${f}, ${l}): pivot = T[${f}] = ${pivot}, bottom = ${f}, top = ${l}`, `partition(T, ${f}, ${l})：pivot = T[${f}] = ${pivot}，bottom = ${f}，top = ${l}`), pivot });
+      for (let guard = 0; guard < 500; guard++) {
+        while (true) { c.cmp++; const g = a[t] > pivot; push({ range: [f, l], ptr: { bottom: b, top: t }, cmp: [t], line: [18], msg: L(`T[top=${t}] = ${a[t]} > ${pivot}?${g ? ' Yes → top--' : ' No → stop top here'}`, `T[top=${t}] = ${a[t]} > ${pivot}？${g ? ' 是 → top--' : ' 否 → top 停在这里'}`), pivot }); if (g) t--; else break; if (t < f) throw new Error('top ran out of range'); }
+        while (true) { c.cmp++; const g = a[b] < pivot; push({ range: [f, l], ptr: { bottom: b, top: t }, cmp: [b], line: [19], msg: L(`T[bottom=${b}] = ${a[b]} < ${pivot}?${g ? ' Yes → bottom++' : ' No → stop bottom here'}`, `T[bottom=${b}] = ${a[b]} < ${pivot}？${g ? ' 是 → bottom++' : ' 否 → bottom 停在这里'}`), pivot }); if (g) b++; else break; if (b > l) throw new Error('bottom ran out of range'); }
+        if (b < t) {
+          if (a[b] === a[t]) throw new Error('DUP');
+          sw(b, t); c.swp++; push({ range: [f, l], ptr: { bottom: b, top: t }, swp: [b, t], line: [20, 21], msg: L(`bottom ${b} < top ${t} → swap T[${b}] and T[${t}]`, `bottom ${b} < top ${t} → 交换 T[${b}] 与 T[${t}]`), pivot });
+        } else {
+          push({ range: [f, l], ptr: { bottom: b, top: t }, line: [23, 25], msg: L(`bottom ${b} ≥ top ${t} → stop, cutPoint = top = ${t}`, `bottom ${b} ≥ top ${t} → 结束，cutPoint = top = ${t}`), pivot, cut: t });
+          log.push({ k: st.length, label: L(`partition(T, ${f}, ${l})`, `partition(T, ${f}, ${l})`), a: a.slice(), hl: [f, l], note: L(`pivot ${pivot} → returns cut = ${t}; next: quickSort(T, ${f}, ${t}) and quickSort(T, ${t + 1}, ${l})`, `pivot ${pivot} → 返回 cut = ${t}；接着 quickSort(T, ${f}, ${t}) 和 quickSort(T, ${t + 1}, ${l})`), cut: t });
+          return t;
+        }
+      }
+      throw new Error('partition loop');
+    };
+    const qs = (f, l) => {
+      if (++calls > 400) throw new Error('recursion');
+      push({ range: [f, l], line: [4], msg: L(`quickSort(T, ${f}, ${l})${f < l ? '' : ' — first ≥ last, nothing to do'}`, `quickSort(T, ${f}, ${l})${f < l ? '' : '——first ≥ last，什么都不做'}`) });
+      if (f < l) { const cut = part(f, l); qs(f, cut); qs(cut + 1, l); }
+    };
+    qs(0, n - 1); done = range(0, n - 1);
+  }
+  push({ line: [], msg: L('Done — the list is sorted', '完成——列表已排好') });
+  } catch (e) { err = e.message; }
+  return { st, log, c, a, err };
+}
+
+SITE.widgets.sortViz = (el, arg) => {
+  let alg = arg.alg, arr = (arg.arr || [7, 8, 3, 1, 6]).slice();
+  const algs = arg.algs || Object.keys(ALG_NAME);
+  const presets = arg.presets || [];
+  const build = () => {
+    el.innerHTML = `<div class="w"><div class="wt">${T('Sorting visualizer — runs the code line by line', '排序可视化——逐行运行代码')}</div>
+    <div class="row"><select class="in al">${algs.map(k => `<option value="${k}" ${k === alg ? 'selected' : ''}>${ALG_NAME[k]} / ${ALG_ZH[k]}</option>`).join('')}</select>
+    <input class="in mono ar" value="${arr.join(' ')}" style="flex:1;min-width:180px"><button class="btn sm pri go">${T('Load', '载入')}</button><button class="btn sm rnd">🎲 ${T('Random', '随机')}</button></div>
+    ${presets.length ? `<div class="row" style="font-size:13px">${T('Examples', '例子')}: ${presets.map(p => `<button class="btn sm ps" data-p="${p.join(' ')}">[${p.join(' ')}]</button>`).join('')}</div>` : ''}
+    <div class="vz"></div></div>`;
+    $('.al', el).onchange = e => { alg = e.target.value; run(); };
+    $('.go', el).onclick = () => { const v = $('.ar', el).value.trim().split(/[\s,]+/).map(Number).filter(x => !isNaN(x)); if (v.length >= 2 && v.length <= 14) { arr = v; run(); } };
+    $('.rnd', el).onclick = () => { arr = distinctInts(rint(5, 8), 1, 99); $('.ar', el).value = arr.join(' '); run(); };
+    $$('.ps', el).forEach(b => b.onclick = () => { arr = b.dataset.p.split(' ').map(Number); $('.ar', el).value = arr.join(' '); run(); });
+    run();
+  };
+  const run = () => {
+    const R = sortRun(alg, arr); const vz = $('.vz', el);
+    if (R.err) {
+      vz.innerHTML = R.err === 'DUP' ? `<div class="warn">${T('This <code>partition()</code> loops forever on this input: two values equal to the pivot meet (bottom and top both stop on equal values and swapping them changes nothing). Use distinct numbers here.', '这个 <code>partition()</code> 遇到这个输入会死循环：两个等于 pivot 的值相遇（bottom 和 top 都停在相等的值上，交换也没变化）。请用不重复的数。')}</div>`
+        : `<div class="warn">${T('This input cannot be visualized (' + esc(R.err) + '). Try distinct numbers.', '无法可视化这个输入（' + esc(R.err) + '）。请用互不相同的数。')}</div>`;
+      return;
+    }
+    vz.innerHTML = `<div class="vzgrid"><div style="min-width:0"><div class="stage" style="overflow-x:auto;padding:6px 0"></div><div class="msg m" style="min-height:3em"></div>
+      <div class="row cnt" style="font-size:14px"></div><div class="ctl"></div></div><div style="min-width:0">${codeHTML(SORT_CODE[alg])}</div></div>
+      <div class="row" style="margin-top:10px"><button class="btn pri pstart">🧠 ${T('Test me: predict every step for this array', '考考我：预测这个数组的每一步')}</button></div><div class="pred"></div>
+      <div class="plogw"><b>${T('Pass log (what the exam asks you to write)', '每趟结果（考试要你写的就是这个）')}</b><div class="plog"></div></div>`;
+    const pre = $('pre', vz);
+    const draw = (s, i) => {
+      const n = s.a.length, ptrs = s.ptr || {};
+      const inRange = k => !s.range || (k >= s.range[0] && k <= s.range[1]);
+      let h = `<div style="display:flex;gap:5px;align-items:flex-end">`;
+      for (let k = 0; k < n; k++) {
+        let cls = 'box';
+        if (s.done.includes(k)) cls += ' g';
+        if (s.cmp && s.cmp.includes(k)) cls += ' b';
+        if (s.swp && s.swp.includes(k)) cls += ' a';
+        if (s.ins === k) cls += ' a';
+        if (!inRange(k)) cls += ' dim';
+        const labels = Object.entries(ptrs).filter(([, v]) => v === k).map(([kk]) => kk);
+        const sep = s.split === k ? 'margin-right:14px;' : '';
+        h += `<div style="text-align:center;${sep}"><div class="${cls}" style="min-width:42px">${s.hole === k && s.item !== undefined ? '<span style="opacity:.4">' + s.a[k] + '</span>' : s.a[k]}</div><div style="font-size:11px;color:var(--muted)">[${k}]</div><div style="font-size:11px;font-weight:700;color:var(--accent);min-height:14px">${labels.join('<br>')}</div></div>`;
+      }
+      h += `</div>`;
+      if (s.tmp) h += `<div style="margin-top:6px;font-size:12px;color:var(--muted)">tempArray</div><div style="display:flex;gap:5px">${Array.from({ length: n }, (_, k) => { const v = k >= s.tf && k - s.tf < s.tmp.length ? s.tmp[k - s.tf] : null; return `<div class="box ${v === null ? 'dim' : 'b'}" style="min-width:42px;height:32px">${v === null ? '' : v}</div>`; }).join('')}</div>`;
+      if (s.item !== undefined) h += `<div style="margin-top:6px;font-size:14px">item = <b style="font-family:var(--mono)">${s.item}</b></div>`;
+      if (s.pivot !== undefined) h += `<div style="margin-top:6px;font-size:14px">pivot = <b style="font-family:var(--mono)">${s.pivot}</b></div>`;
+      $('.stage', vz).innerHTML = h;
+      $('.m', vz).innerHTML = T(s.msg[0], s.msg[1]);
+      $('.cnt', vz).innerHTML = `${T('Comparisons', '比较')}: <b>${s.c.cmp}</b> · ${alg === 'insertion' ? T('Shifts', '移位') + ': <b>' + s.c.shf + '</b>' : alg === 'merge' ? '' : T('Swaps', '交换') + ': <b>' + s.c.swp + '</b>'}`;
+      highlightLines(pre, s.line || []);
+      $('.plog', vz).innerHTML = `<table class="t" style="font-size:14px">` + R.log.map(L => `<tr style="${L.k > i ? 'opacity:.25' : ''}"><td style="white-space:nowrap">${T(L.label[0], L.label[1])}</td><td style="font-family:var(--mono);white-space:nowrap">${L.a.map((v, k) => L.hl && (k < L.hl[0] || k > L.hl[1]) ? `<span style="color:var(--muted)">${v}</span>` : `<b>${v}</b>`).join(' ')}</td><td style="font-size:13px">${T(L.note[0], L.note[1])}</td></tr>`).join('') + `</table>`;
+    };
+    stepPlayer($('.ctl', vz), R.st, draw, { speed: 650 });
+    const pred = $('.pred', vz), plogw = $('.plogw', vz);
+    $('.pstart', vz).onclick = () => {
+      let k = 0, score = 0; const res = [];
+      plogw.style.display = 'none'; $('.pstart', vz).style.display = 'none';
+      const norm = t => t.trim().split(/[\s,]+/).filter(Boolean).map(Number);
+      const show = () => {
+        const n = R.log.length;
+        let h = `<div class="card" style="border-color:var(--blue)"><b>🧠 ${T('Predict every step', '预测每一步')}</b> <span style="font-size:13px;color:var(--muted)">${T('Write the whole array after each step, numbers separated by spaces. The pass log is hidden until you finish — don’t play the animation above.', '写出每一步之后的整个数组，数字用空格隔开。做完之前每趟结果是隐藏的——别去播放上面的动画。')}</span>
+          <div style="font-family:var(--mono);margin:6px 0">${T('Start', '初始')}: [${arr.join(' ')}]</div><table class="t" style="font-size:14px">`;
+        R.log.forEach((L, i) => { if (i < k) h += `<tr><td style="white-space:nowrap">${T(L.label[0], L.label[1])}</td><td style="font-family:var(--mono)">${res[i]}</td></tr>`; });
+        if (k < n) h += `<tr><td style="white-space:nowrap">${T(R.log[k].label[0], R.log[k].label[1])}</td><td><input class="in mono pin" style="width:100%" placeholder="${arr.join(' ')}"></td></tr>`;
+        h += `</table>`;
+        h += k < n ? `<div class="row"><button class="btn sm pri pck">${T('Check', '检查')}</button><button class="btn sm pq">${T('Stop', '停止')}</button></div>`
+          : `<div class="${score === n ? 'tip' : 'exam'}"><b>${T(`Score: ${score} / ${n}`, `得分：${score} / ${n}`)}</b> ${score === n ? T('— exam-ready for this algorithm.', '——这个算法可以上考场了。') : T('— step through the red ones in the visualizer above, then press 🎲 Random and try again.', '——在上面的可视化器里把红色的步骤走一遍，然后按 🎲 随机再试一次。')} <button class="btn sm pq">${T('Close', '关闭')}</button></div>`;
+        h += `</div>`;
+        pred.innerHTML = h;
+        const pin = $('.pin', pred); if (pin) { pin.focus(); pin.onkeydown = e => { if (e.key === 'Enter') $('.pck', pred).click(); }; }
+        const ck = $('.pck', pred); if (ck) ck.onclick = () => {
+          const got = norm(pin.value), want = R.log[k].a; if (!got.length) return;
+          const ok = got.length === want.length && got.every((v, j) => v === want[j]);
+          if (ok) score++;
+          res[k] = ok ? `<span class="tag-ok">✓ ${want.join(' ')}</span>` : `<span class="tag-no">✗ ${esc(pin.value.trim())}</span><br>${T('correct', '正确')}: <b>${want.join(' ')}</b>`;
+          k++; show(); };
+        $$('.pq', pred).forEach(b => b.onclick = () => { pred.innerHTML = ''; plogw.style.display = ''; $('.pstart', vz).style.display = ''; });
+      };
+      show();
+    };
+  };
+  build();
+};
+
+/* helpers for quiz generators */
+const fmtArr = a => a.join(' ');
+/** random "array after pass k" fill-in question for bubble / selection (largest → end) / insertion */
+function passDrill(alg) {
+  const n = rint(5, 6), arr = distinctInts(n, 1, 60); const R = sortRun(alg, arr); const k = rint(1, Math.min(3, R.log.length));
+  const nm = { bubble: ['bubble sort', '冒泡排序'], selection: ['selection sort (largest to the end)', '选择排序（最大值放到末尾）'], insertion: ['insertion sort', '插入排序'] }[alg];
+  return { t: 'fill', q: [`Sort <code>[${fmtArr(arr)}]</code> into ascending order with <b>${nm[0]}</b>. Write the array <b>after pass ${k}</b>.`, `用<b>${nm[1]}</b>把 <code>[${fmtArr(arr)}]</code> 升序排列。写出<b>第 ${k} 趟后</b>的数组。`], a: [fmtArr(R.log[k - 1].a)], ph: 'e.g. 3 7 1 6 8',
+    e: [R.log.slice(0, k).map((L, i) => `Pass ${i + 1}: ${fmtArr(L.a)}`).join('<br>'), R.log.slice(0, k).map((L, i) => `第 ${i + 1} 趟：${fmtArr(L.a)}`).join('<br>')] };
+}
+
+</script>
+<script>
+/* ===== ../../addons/cs-algorithms/sheets.js ===== */
+/* =====================================================================
+   ===== Answer-sheet drills for classic algorithms (exam-table layouts)
+   Every widget: fill the boxes like on the answer booklet → Check / Show answer / New data.
+   ===================================================================== */
+(function () {
+  const css = `
+  .t1 .t1i{width:3.3em;padding:4px 3px;text-align:center;font-family:var(--mono);font-size:13.5px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink)}
+  .t1 .t1i.m{width:6.5em}.t1 .t1i.w{width:12em;text-align:left}.t1 .t1i.xw{width:100%;max-width:26em;text-align:left}
+  .t1 select.t1i{width:auto;max-width:100%}
+  .t1 select{max-width:100%}
+  @media (max-width:480px){.t1 .t1i.m{width:5.2em}.t1 .t1i.w{width:9.5em}}
+  .t1 .t1i.ok{border:2px solid var(--ok);background:var(--ok-soft);color:var(--ok);font-weight:700}
+  .t1 .t1i.bad{border:2.5px dashed var(--bad);background:var(--bad-soft);color:var(--bad);font-weight:700;text-decoration:line-through}
+  .t1 .t1blk{border:1px dashed var(--line);border-radius:10px;padding:8px 10px;margin:8px 0}
+  .t1 .t1lab{font-size:13px;color:var(--muted)}
+  .t1 .t1row{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;margin:4px 0}
+  .t1 .t1arr{display:flex;flex-wrap:wrap;gap:3px;align-items:center}
+  .t1 .t1arr .ix{display:inline-block;width:3.3em;text-align:center;font-size:11px;color:var(--muted);font-family:var(--mono)}
+  .t1 .t1cells{overflow-x:auto;max-width:100%}
+  .t1 .t1frame{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:6px 0;background:var(--panel2)}
+  .t1 .t1arrow{color:var(--muted);font-size:13px;margin:2px 0 2px 14px}
+  .t1 .t1score{font-weight:700}
+  .t1 table.t td,.t1 table.t th{padding:4px 6px}
+  `;
+  const s = document.createElement('style'); s.textContent = css; document.head.appendChild(s);
+})();
+
+const t1norm = v => String(v == null ? '' : v).toLowerCase().replace(/[{}\[\]]/g, ' ').replace(/[,;]/g, ' ').replace(/\s+/g, ' ').trim();
+const t1arrEq = (got, exp) => t1norm(got).split(' ').filter(x => x !== '-' && x !== '–').join(' ') === t1norm(exp).split(' ').filter(x => x !== '-').join(' ');
+const t1fmt = a => a.join(' ');
+const t1cmpVal = (got, exp) => {           // '-' / 'none' / empty-ish for an exhausted half
+  if (exp === '-') return ['-', '–', 'none', 'x', 'null', '/'].includes(t1norm(got));
+  return t1norm(got) === t1norm(exp);
+};
+const t1in = (k, cls = '', ph = '') => `<input class="t1i ${cls}" data-k="${k}" placeholder="${ph}" autocomplete="off" spellcheck="false">`;
+const t1sel = (k, opts) => `<select class="t1i" data-k="${k}"><option value="">?</option>${opts.map(o => `<option value="${attr(o[0])}">${o[1]}</option>`).join('')}</select>`;
+
+/** generic answer-sheet form.
+ *  spec: { title, intro, body (html with t1in/t1sel keys), exp: {key: expected | {v, cmp}}, model (html shown with the answer), newData (fn → redraw) } */
+function t1Form(el, spec) {
+  el.innerHTML = `<div class="w t1"><div class="wt">${spec.title}</div>${spec.intro || ''}<div class="t1body">${spec.body}</div>
+    <div class="row"><button class="btn sm pri ck">${T('Check', '检查')}</button><button class="btn sm sh">${T('Show answer', '看答案')}</button>
+    <button class="btn sm cl">${T('Clear', '清空')}</button>${spec.newData ? `<button class="btn sm nw">🎲 ${T('New data', '换一组数据')}</button>` : ''}<span class="t1score">${wRecHTML('t1:' + (spec.key || String(spec.title).replace(/<[^>]+>/g, '').slice(0, 80)))}</span></div>
+    <div class="t1model"></div></div>`;
+  const rkey = 't1:' + (spec.key || String(spec.title).replace(/<[^>]+>/g, '').slice(0, 80));   // random sheets share one record per type
+  const inputs = () => $$('[data-k]', el);
+  const expOf = k => { const e = spec.exp[k]; return e && typeof e === 'object' && 'v' in e ? e : { v: e }; };
+  const check = () => {
+    let ok = 0, n = 0;
+    inputs().forEach(i => { const e = expOf(i.dataset.k); if (e.v === undefined) return; n++;
+      const good = e.cmp ? e.cmp(i.value, e.v) : t1norm(i.value) === t1norm(e.v); i.classList.toggle('ok', good); i.classList.toggle('bad', !good); if (good) ok++; });
+    wRec(rkey, ok, n, spec.title);
+    $('.t1score', el).innerHTML = `${ok} / ${n} ${ok === n ? '✅' : ''} ${wRecHTML(rkey)}`;
+    return ok === n;
+  };
+  $('.ck', el).onclick = check;
+  $('.sh', el).onclick = () => {
+    inputs().forEach(i => { const e = expOf(i.dataset.k); if (e.v === undefined) return; i.value = e.show !== undefined ? e.show : e.v; i.classList.add('ok'); i.classList.remove('bad'); });
+    $('.t1score', el).textContent = '';
+    if (spec.model) $('.t1model', el).innerHTML = spec.model;
+  };
+  $('.cl', el).onclick = () => { inputs().forEach(i => { if (!i.dataset.keep) i.value = ''; i.classList.remove('ok', 'bad'); }); $('.t1score', el).textContent = ''; $('.t1model', el).innerHTML = ''; };
+  if (spec.newData) $('.nw', el).onclick = spec.newData;
+  $$('.cp', el).forEach(b => b.onclick = () => {        // "copy row above" buttons
+    const from = $$(`[data-k^="${b.dataset.from}"]`, el), to = $$(`[data-k^="${b.dataset.to}"]`, el);
+    to.forEach((t, i) => { if (from[i]) t.value = from[i].value; });
+  });
+  if (spec.after) spec.after(el);
+}
+const t1cells = (prefix, n, pre) => `<div class="t1cells"><div class="t1arr">${Array.from({ length: n }, (_, i) => `<span style="display:inline-flex;flex-direction:column;align-items:center"><span class="ix">[${i}]</span>${t1in(prefix + i).replace('>', pre ? ` value="${attr(pre[i])}" data-keep="1">` : '>')}</span>`).join('')}</div></div>`;
+const t1arrShow = (a, hl = []) => `<div class="t1arr">${a.map((v, i) => `<span style="display:inline-flex;flex-direction:column;align-items:center"><span class="ix">[${i}]</span><span class="box ${hl.includes(i) ? 'a' : ''}" style="min-width:2.6em">${v}</span></span>`).join('')}</div>`;
+const T1RANDARR = (n, lo = 1, hi = 60) => distinctInts(n, lo, hi);
+
+/* ---------- Quick sort partition trace (exam format) ---------- */
+const T1_PART_CODE = `int partition(int list[], int first, int last) {
+    int pivot = list[first];        // (or a chosen pivot index)
+    int bottom = first, top = last;
+    while (true) {
+        while (list[top] > pivot) top--;
+        while (list[bottom] < pivot) bottom++;
+        if (bottom < top)
+            swap(list[bottom], list[top]);
+        else
+            return top;             // cutPoint
+    }
+}
+void quickSort(int list[], int first, int last) {
+    if (first < last) {
+        int cut = partition(list, first, last);
+        quickSort(list, first, cut);
+        quickSort(list, cut + 1, last);
+    }
+}`;
+SITE.widgets.sheetPartition = (el, arg = {}) => {
+  let arr = arg.arr ? arg.arr.slice() : null, pi = arg.pivotIdx || 0;
+  const make = () => { if (!arr || arg.random) { for (;;) { const a = T1RANDARR(rint(6, 9)); try { T1.partition(a); arr = a; break; } catch (e) { } } } };
+  const draw = () => {
+    make();
+    const R = T1.partition(arr, 0, arr.length - 1, pi), n = arr.length, exp = {};
+    let body = `<details><summary class="t1lab">${T('partition() code', 'partition() 代码')}</summary>${codeHTML(T1_PART_CODE)}</details>
+      <div class="t1blk"><div class="t1row"><b>cut = partition(list, 0, ${n - 1})</b></div>
+      <div class="t1row">pivot value = <b>${R.pivot}</b>${pi ? ` <span class="t1lab">(list[${pi}])</span>` : ''} · bottom = <b>0</b> · top = <b>${n - 1}</b></div>${t1arrShow(arr)}</div>`;
+    R.steps.forEach((st, k) => {
+      exp[`b${k}`] = String(st.bottom); exp[`t${k}`] = String(st.top);
+      body += `<div class="t1blk"><div class="t1row"><span class="t1lab">${T('Step', '第')} ${k + 1}${T('', ' 步')}</span> bottom = ${t1in('b' + k)} top = ${t1in('t' + k)}`;
+      if (st.swap) {
+        exp[`s${k}a`] = String(st.swap[0]); exp[`s${k}b`] = String(st.swap[1]);
+        body += ` swap(${t1in('s' + k + 'a')}, ${t1in('s' + k + 'b')})</div>`;
+        st.a.forEach((v, i) => exp[`a${k}_${i}`] = String(v));
+        body += `<div class="t1row"><span class="t1lab">${T('array after the swap', '交换后的数组')}</span>${k ? `<button class="btn sm cp" data-from="a${k - 1}_" data-to="a${k}_" title="copy">⧉ ${T('copy row above', '复制上一行')}</button>` : ''}</div>${t1cells(`a${k}_`, n, k ? null : arr)}</div>`;
+      } else {
+        exp.cut = String(st.cut); exp.q1a = '0'; exp.q1b = String(st.cut); exp.q2a = String(st.cut + 1); exp.q2b = String(n - 1);
+        body += ` → bottom ≥ top → <b>cutPoint</b> = ${t1in('cut')}</div>
+          <div class="t1row"><span class="t1lab">${T('Next recursive calls', '下一步递归调用')}</span></div>
+          <div class="t1row"><code>quickSort(list, ${t1in('q1a')}, ${t1in('q1b')})</code> <code>quickSort(list, ${t1in('q2a')}, ${t1in('q2b')})</code></div></div>`;
+      }
+    });
+    const fin = R.a;
+    t1Form(el, { title: `${T('Quick sort partition trace', '快排 partition 追踪')} — ${arg.title ? T(arg.title[0], arg.title[1]) : T('exam format', '考试格式')}`,
+      intro: P(`Trace <code>partition()</code> until the first cut. In every step write where <b>bottom</b> and <b>top</b> stop, the two values swapped, and the array after the swap. Steps shown here = steps needed (the exam sheet may give extra blocks — leave them empty).`,
+        `追踪 <code>partition()</code> 到第一次切分。每一步写出 <b>bottom</b> 和 <b>top</b> 停在哪、交换的两个值、交换后的数组。这里给出的步数 = 实际需要的步数（答题纸可能多给几格——空着即可）。`),
+      body, exp, newData: arg.fixed ? null : () => { arg.random = true; arr = null; draw(); },
+      model: `<div class="note">${T('Partitioned array', '划分后的数组')}: <b>${t1fmt(fin)}</b> · cutPoint = <b>${R.cut}</b> → quickSort(list, 0, ${R.cut}) ${T('and', '和')} quickSort(list, ${R.cut + 1}, ${n - 1}).
+        ${T(`Everything in [0..${R.cut}] is ≤ ${R.pivot}; everything in [${R.cut + 1}..${n - 1}] is ≥ ${R.pivot}.`, `[0..${R.cut}] 全部 ≤ ${R.pivot}；[${R.cut + 1}..${n - 1}] 全部 ≥ ${R.pivot}。`)}</div>` });
+  };
+  draw();
+};
+
+/* ---------- merge() trace table ---------- */
+SITE.widgets.sheetMergeTable = (el, arg = {}) => {
+  let list = arg.list ? arg.list.slice() : null, mid = arg.mid;
+  const make = () => { if (!list || arg.random) { const k1 = rint(3, 4), k2 = rint(3, 4), v = T1RANDARR(k1 + k2, 1, 40); const L = v.slice(0, k1).sort((a, b) => a - b), R = v.slice(k1).sort((a, b) => a - b); list = L.concat(R); mid = k1 - 1; } };
+  const draw = () => {
+    make();
+    const last = list.length - 1, rows = T1.mergeRows(list, 0, mid, last), exp = {};
+    let body = `<div class="t1row">${T('first half', '前半')}: <b>${t1fmt(list.slice(0, mid + 1))}</b> &nbsp; ${T('second half', '后半')}: <b>${t1fmt(list.slice(mid + 1))}</b> &nbsp; <code>merge(list, 0, ${mid}, ${last})</code></div>
+    <div class="t1cells"><table class="t"><tr><th>first1</th><th>first2</th><th>list[first1]</th><th>list[first2]</th><th>tempArray</th></tr>`;
+    rows.forEach((r, k) => {
+      exp[`f1_${k}`] = String(r.f1); exp[`f2_${k}`] = String(r.f2);
+      exp[`v1_${k}`] = { v: r.v1 === null ? '-' : String(r.v1), cmp: t1cmpVal }; exp[`v2_${k}`] = { v: r.v2 === null ? '-' : String(r.v2), cmp: t1cmpVal };
+      const shown = r.tmp.concat(Array(list.length - r.tmp.length).fill('-'));
+      exp[`tp_${k}`] = { v: t1fmt(r.tmp), cmp: t1arrEq, show: '{' + shown.join(', ') + '}' };
+      body += `<tr><td>${t1in('f1_' + k)}</td><td>${t1in('f2_' + k)}</td><td>${t1in('v1_' + k)}</td><td>${t1in('v2_' + k)}</td><td>${t1in('tp_' + k, 'w', '2 4 6 - - -')}</td></tr>`;
+    });
+    body += `</table></div>`;
+    t1Form(el, { title: `${T('merge() trace table', 'merge() 追踪表')}${arg.title ? ' — ' + T(arg.title[0], arg.title[1]) : ''}`,
+      intro: P('One row per item copied into <code>tempArray</code>: the two indices being compared, their values (write <b>-</b> when a half is used up), then tempArray after the copy.', '每复制一个元素到 <code>tempArray</code> 写一行：正在比较的两个下标、它们的值（某一半用完就写 <b>-</b>），然后是复制后的 tempArray。'),
+      body, exp, newData: arg.fixed ? null : () => { arg.random = true; list = null; draw(); } });
+  };
+  draw();
+};
+
+/* ---------- merge sort recursion tree ---------- */
+SITE.widgets.sheetMergeTree = (el, arg = {}) => {
+  let arr = arg.arr ? arg.arr.slice() : null;
+  const draw = () => {
+    if (!arr || arg.random) arr = T1RANDARR(rint(5, 7), 1, 90);
+    const { calls } = T1.mergeTree(arr), exp = {}, maxD = Math.max(...calls.map(c => c.d));
+    let body = `<div class="t1lab">${T('Divide (top → bottom). Fill the index range of each mergeSort() call and the items it holds.', '拆分（从上到下）。填每个 mergeSort() 调用的下标范围和它包含的元素。')}</div>`;
+    for (let d = 0; d <= maxD; d++) {
+      body += `<div class="t1blk"><span class="t1lab">${T('Level', '第')} ${d}${T('', ' 层')}</span><div class="t1row">`;
+      calls.filter(c => c.d === d).forEach(c => {
+        const k = `${c.f}_${c.l}`;
+        if (d === 0) body += `<code>mergeSort(a, ${c.f}, ${c.l})</code> [ ${t1fmt(c.before)} ]`;
+        else { exp[`f${k}`] = String(c.f); exp[`l${k}`] = String(c.l); exp[`e${k}`] = { v: t1fmt(c.before), cmp: t1arrEq };
+          body += `<span><code>mergeSort(a, ${t1in('f' + k)}, ${t1in('l' + k)})</code> ${t1in('e' + k, 'm', 'items')}</span>`; }
+      });
+      body += `</div></div>`;
+    }
+    body += `<div class="t1lab">${T('Merge (bottom → top). Fill the merged result of every merge(a, first, mid, last).', '合并（从下到上）。填每个 merge(a, first, mid, last) 合并后的结果。')}</div>`;
+    for (let d = maxD; d >= 0; d--) {
+      const ms = calls.filter(c => c.d === d && c.f < c.l); if (!ms.length) continue;
+      body += `<div class="t1blk"><div class="t1row">`;
+      ms.forEach(c => { const k = `${c.f}_${c.l}`; exp[`m${k}`] = { v: t1fmt(c.after), cmp: t1arrEq };
+        body += `<span><code>merge(a, ${c.f}, ${c.m}, ${c.l})</code> → ${t1in('m' + k, d === 0 ? 'w' : 'm')}</span>`; });
+      body += `</div></div>`;
+    }
+    t1Form(el, { title: `${T('Merge sort recursion tree', '归并排序递归树')}${arg.title ? ' — ' + T(arg.title[0], arg.title[1]) : ''}`,
+      intro: P('Rule: <code>mid = (first + last) / 2</code> (integer division) and the <b>left half includes mid</b>. Single items are not split further.', '规则：<code>mid = (first + last) / 2</code>（整除），<b>左半包含 mid</b>。单个元素不再拆。'),
+      body, exp, newData: arg.fixed ? null : () => { arg.random = true; draw(); } });
+  };
+  draw();
+};
+
+/* ---------- pass tables for simple sorts ---------- */
+const T1_ALG = {
+  bubble: ['Bubble sort (basic, n−1 passes)', '冒泡排序（基础版，n−1 趟）'],
+  ibubble: ['Improved bubble sort (stop after a pass with no swap)', '改进冒泡（某趟无交换即停）'],
+  selection: ['Selection sort (largest → end, swaps every pass)', '选择排序（最大值放末尾，每趟都交换）'],
+  iselection: ['Improved selection sort (no swap if already in place)', '改进选择排序（已在位就不交换）'],
+  selmin: ['Selection sort, minIndex → front variant', '选择排序，最小值放前面的版本'],
+  insertion: ['Insertion sort, ascending', '插入排序，升序'],
+  insertionDesc: ['Insertion sort, descending', '插入排序，降序']
+};
+SITE.widgets.sheetPass = (el, arg = {}) => {
+  let arr = arg.arr ? arg.arr.slice() : null, alg = arg.alg || 'ibubble';
+  const draw = () => {
+    if (!arr || arg.random) arr = T1RANDARR(rint(5, 6), 1, 60);
+    const P_ = T1.passes(arr, alg), n = arr.length, exp = {}, counts = arg.counts !== false && ['ibubble', 'iselection', 'bubble', 'selection', 'selmin'].includes(alg);
+    let tc = 0, ts = 0;
+    let body = `${arg.fixed ? '' : `<div class="t1row">${T('Algorithm', '算法')}: <select class="algsel in">${Object.entries(T1_ALG).map(([k, v]) => `<option value="${k}" ${k === alg ? 'selected' : ''}>${v[1]} · ${v[0]}</option>`).join('')}</select></div>`}
+      <div class="t1row"><b>${T(T1_ALG[alg][0], T1_ALG[alg][1])}</b></div><div class="t1lab">${T('Initial array', '初始数组')}</div>${t1arrShow(arr)}`;
+    P_.forEach((p, k) => {
+      p.a.forEach((v, i) => exp[`p${k}_${i}`] = String(v));
+      body += `<div class="t1blk"><div class="t1row"><b>${T('After pass', '第')} ${p.pass}${T('', ' 趟后')}</b>${k ? `<button class="btn sm cp" data-from="p${k - 1}_" data-to="p${k}_">⧉ ${T('copy row above', '复制上一行')}</button>` : ''}`;
+      if (counts) { exp[`c${k}`] = String(p.cmp); exp[`s${k}`] = String(p.swp); tc += p.cmp; ts += p.swp;
+        body += ` <span>${T('comparisons', '比较')} ${t1in('c' + k)}</span> <span>${T('swaps', '交换')} ${t1in('s' + k)}</span>`; }
+      body += `</div>${t1cells(`p${k}_`, n)}</div>`;
+    });
+    if (counts) { exp.tc = String(tc); exp.ts = String(ts); body += `<div class="t1row"><b>${T('Total comparisons', '总比较次数')}</b> ${t1in('tc')} <b>${T('Total swaps', '总交换次数')}</b> ${t1in('ts')}</div>`; }
+    const notes = {
+      ibubble: T(`Stops after pass ${P_.length} because ${P_[P_.length - 1].swp === 0 ? 'that pass made no swap' : 'all n−1 passes are done'}.`, `在第 ${P_.length} 趟后停止，因为${P_[P_.length - 1].swp === 0 ? '这一趟没有交换' : 'n−1 趟都做完了'}。`),
+      selection: T('This basic code swaps every pass, even when the largest is already at <code>last</code> (a wasted swap) → always n−1 swaps.', '基础版每趟都交换，即使最大值已在 <code>last</code>（白交换）→ 永远 n−1 次交换。'),
+      iselection: T('Improved: skip the swap when <code>largestIndex == last</code> → best case (sorted data) 0 swaps, but comparisons stay n(n−1)/2.', '改进版：<code>largestIndex == last</code> 时不交换 → 最好情况（已有序）0 次交换，但比较仍是 n(n−1)/2。'),
+      selmin: T('Variant: the <b>smallest</b> goes to the <b>front</b>. When a question prints code, follow the printed code.', '变体：<b>最小值</b>放到<b>前面</b>。题目印了代码就照代码做。'),
+      insertion: T('Pass k inserts element [k] into the sorted left part.', '第 k 趟把 [k] 插入左边已排好的部分。'), insertionDesc: T('Descending: bigger items move left.', '降序：大的往左移。'),
+      bubble: T('Basic version: always n−1 passes, pass k makes n−k comparisons.', '基础版：永远 n−1 趟，第 k 趟比较 n−k 次。') };
+    t1Form(el, { title: `${T('Pass table', '逐趟表')}${arg.title ? ' — ' + T(arg.title[0], arg.title[1]) : ''}`, body, exp,
+      intro: arg.vertical ? BOX('warn', 'The answer sheet draws each array <b>vertically with [0] at the bottom</b>. Copy carefully — reading upward is where people swap two cells by accident.', '答题纸把每个数组<b>竖着画，[0] 在最下面</b>。抄写要小心——从下往上读最容易把两格抄反。') : '',
+      model: `<div class="note">${notes[alg] || ''}</div>`,
+      newData: arg.fixed ? null : () => { arg.random = true; draw(); },
+      after: e => { const s = $('.algsel', e); if (s) s.onchange = () => { alg = s.value; draw(); }; } });
+  };
+  draw();
+};
+
+/* ---------- bubble trace rows (pass, x, compare, output, arr) ---------- */
+SITE.widgets.sheetBubbleRows = (el, arg = {}) => {
+  let arr = arg.arr ? arg.arr.slice() : null;
+  const draw = () => {
+    if (!arr || arg.random) arr = T1RANDARR(4, 1, 20);
+    const rows = T1.bubbleRows(arr), exp = {};
+    let body = `${codeHTML(`int arr[] = {${arr.join(', ')}};\nfor (int pass = 1; pass < 4; pass++) {\n    for (int x = 0; x < 3; x++) {\n        if (arr[x] > arr[x+1]) {\n            cout << "swap" << "\\n";\n            temp = arr[x]; arr[x] = arr[x+1]; arr[x+1] = temp;\n        } else {\n            cout << "no swap" << "\\n";\n        }\n    }\n}`)}
+    <div class="t1cells"><table class="t"><tr><th>pass</th><th>x</th><th>arr[x] &gt; arr[x+1]</th><th>${T('Output', '输出')}</th><th>arr</th></tr>`;
+    rows.forEach((r, k) => {
+      exp[`g${k}`] = r.gt ? 'true' : 'false'; exp[`o${k}`] = r.gt ? 'swap' : 'no swap'; exp[`a${k}`] = { v: t1fmt(r.a), cmp: t1arrEq, show: '{' + r.a.join(', ') + '}' };
+      body += `<tr><td>${r.p}</td><td>${r.x}</td><td><code>${r.l} &gt; ${r.r}</code> ${t1sel('g' + k, [['true', 'true'], ['false', 'false']])}</td><td>${t1sel('o' + k, [['swap', 'swap'], ['no swap', 'no swap']])}</td><td>${t1in('a' + k, 'm')}</td></tr>`;
+    });
+    body += `</table></div>`;
+    t1Form(el, { title: T('Bubble sort trace table', '冒泡排序追踪表'), body, exp,
+      intro: P('This code never shrinks the inner loop (always x = 0, 1, 2), so every pass prints three lines.', '这段代码内层循环不缩短（x 永远是 0、1、2），所以每趟都输出三行。'),
+      newData: arg.fixed ? null : () => { arg.random = true; draw(); } });
+  };
+  draw();
+};
+
+/* ---------- recursion tracing template ---------- */
+SITE.widgets.sheetRec = (el, arg = {}) => {
+  let fn = arg.fn, args = arg.args;
+  const rand = () => {
+    const pick = ['addDown', 'sum', 'meet', 'power', 'fact', 'triple', 'digits'][rint(0, 6)];
+    const A = { addDown: () => [rint(2, 4), rint(1, 9)], sum: () => [rint(100, 999)], meet: () => { const x = rint(1, 4); return [x, x + rint(2, 5)]; }, power: () => [rint(2, 3), rint(2, 4)],
+      fact: () => [rint(3, 5)], triple: () => [2 * rint(1, 3)], digits: () => [rint(100, 9999)] }[pick]();
+    fn = pick; args = A;
+  };
+  const draw = () => {
+    if (!fn || arg.random) rand();
+    const F = T1.REC[fn], fr = T1.recFrames(fn, args), exp = {};
+    let body = `${codeHTML(`${F.sig} {\n${F.code.map(l => '    ' + l).join('\n')}\n}`)}<div class="t1row"><code>cout &lt;&lt; ${fn}(${args.join(', ')});</code></div>`;
+    fr.forEach((f, k) => {
+      exp[`a${k}`] = f.args.join(', '); exp[`r${k}`] = String(f.ret);
+      exp[`k${k}`] = 'base' in f ? 'base' : 'general';
+      if (!('base' in f)) exp[`n${k}`] = f.next.join(', ');
+      body += `${k ? `<div class="t1arrow">↓ ${T('calls', '调用')}</div>` : ''}<div class="t1frame" style="margin-left:${Math.min(k, 4) * 8}px"><div class="t1row"><code>${fn}(</code>${k ? t1in('a' + k, 'm') : `<b>${f.args.join(', ')}</b>`}<code>)</code>
+        <span>${T('case', '情况')}: ${t1sel('k' + k, [['base', 'base / 基本'], ['general', 'general / 一般']])}</span></div>
+        <div class="t1row">${'base' in f ? `<span class="t1lab">${T('no further call', '不再调用')}</span>` : `<span>${T('next call', '下一次调用')}: <code>${fn}(</code>${t1in('n' + k, 'm')}<code>)</code></span>`}
+        <span>↑ return ${t1in('r' + k, 'm')}</span></div></div>`;
+      if (k === 0) exp[`a0`] = undefined;
+    });
+    exp.out = String(fr[0].ret);
+    body += `<div class="t1row"><b>${T('Value printed', '打印的值')}</b> ${t1in('out', 'm')}</div>`;
+    t1Form(el, { title: `${T('Recursion trace template', '递归追踪模板')}${arg.title ? ' — ' + T(arg.title[0], arg.title[1]) : ''}`,
+      intro: P('Go <b>down</b> writing each call’s arguments, then come back <b>up</b> filling the return values from the base case to the first call. Integer division: <code>123 / 10 = 12</code>.', '先往<b>下</b>写每次调用的参数，再从基本情况往<b>上</b>回填返回值，直到第一次调用。整数除法：<code>123 / 10 = 12</code>。'),
+      body, exp, newData: arg.fixed ? null : () => { arg.random = true; draw(); },
+      model: `<div class="note">${fr.map(f => `${fn}(${f.args.join(', ')})`).join(' → ')} ⇒ ${T('returns', '返回')} ${fr.slice().reverse().map(f => f.ret).join(' → ')}</div>` });
+  };
+  draw();
+};
+
+/* ---------- step-count table (count iterations per line) ---------- */
+// every line in a loop counts as many times as the loop body runs; header line = number of iterations
+const T1_STEPS = {
+  triangle: { t: ['Dependent inner loop (b ≤ a)', '内层依赖外层（b ≤ a）'], rows: [['for (int a = 1; a <= n; a++)', 'n'], ['    for (int b = 1; b <= a; b++)', 'n(n+1)/2'], ['        cout << "step";', 'n(n+1)/2']],
+    total: 'n + n(n+1)', big: 'n2', why: ['Inner loop runs 1 + 2 + … + n = n(n+1)/2 times in total.', '内层总共运行 1 + 2 + … + n = n(n+1)/2 次。'] }
+};
+const T1_BIGO = [['1', 'O(1)'], ['logn', 'O(log₂n)'], ['n', 'O(n)'], ['nlogn', 'O(n log₂n)'], ['n2', 'O(n²)'], ['n3', 'O(n³)'], ['2n', 'O(2ⁿ)']];
+function t1RandSteps() {
+  const kind = rint(0, 4), a = rint(0, 3), lt = rint(0, 1), up = lt ? `i < n` : `i <= n`, it = lt ? `n-${a}` : (a ? `n-${a}+1` : 'n+1');
+  const iters = lt ? `(n-${a})` : `(n-${a}+1)`;
+  if (kind === 0) return { t: ['Random: single loop', '随机：单层循环'], rows: [['int sum = 0;', '1'], [`for (int i = ${a}; ${up}; i++) {`, iters], ['    sum = sum + i;', iters], ['    cout << sum;', iters], ['}', null]], total: `1 + 3${iters}`, big: 'n', why: [`Loop from ${a} ${lt ? 'to n−1' : 'to n'} → ${it} iterations (b − a + 1).`, `从 ${a} 到 ${lt ? 'n−1' : 'n'} → ${it} 次（b − a + 1）。`] };
+  if (kind === 1) { const m = [2, 4][rint(0, 1)], s = [1, m][rint(0, 1)], cnt = s === 1 ? `(1+log${m}n)` : `log${m}n`;
+    return { t: ['Random: multiplying loop', '随机：乘法循环'], rows: [[`int i = ${s};`, '1'], ['while (i <= n) {', cnt], ['    x++;', cnt], [`    i = i * ${m};`, cnt], ['}', null]], total: `1 + 3${cnt}`, big: 'logn', why: [`i = ${s}, ${s * m}, … ≤ n → ${s === 1 ? `1 + log${m}n` : `log${m}n`} iterations${s === 1 ? ' (i = 1 is counted too)' : ''}.`, `i = ${s}、${s * m}…≤ n → ${s === 1 ? `1 + log${m}n` : `log${m}n`} 轮${s === 1 ? '（i = 1 也算一轮）' : ''}。`] }; }
+  if (kind === 2) return { t: ['Random: nested n × n', '随机：嵌套 n × n'], rows: [['for (int i = 1; i <= n; i++)', 'n'], ['    for (int j = 1; j <= n; j++)', 'n^2'], ['        cout << i * j;', 'n^2']], total: 'n + 2n^2', big: 'n2', why: ['Inner header and body run n · n times.', '内层循环头和循环体各运行 n · n 次。'] };
+  if (kind === 3) return { t: ['Random: loop with a doubling inner loop', '随机：外层 n、内层翻倍'], rows: [['for (int i = 1; i <= n; i++) {', 'n'], ['    int j = 1;', 'n'], ['    while (j <= n) {', 'n(1+log2n)'], ['        cout << j;', 'n(1+log2n)'], ['        j = j * 2; }', 'n(1+log2n)'], ['}', null]], total: '2n + 3n(1+log2n)', big: 'nlogn', why: ['Each outer iteration runs the doubling loop 1 + log₂n times.', '外层每一轮，翻倍循环都跑 1 + log₂n 次。'] };
+  return { t: ['Random: dependent inner loop', '随机：内层依赖外层'], rows: [['for (int a = 1; a <= n; a++)', 'n'], ['    for (int b = 1; b <= a; b++)', 'n(n+1)/2'], ['        cout << a + b;', 'n(n+1)/2']], total: 'n + n(n+1)', big: 'n2', why: ['1 + 2 + … + n = n(n+1)/2.', '1 + 2 + … + n = n(n+1)/2。'] };
+}
+const t1exprShow = s => s.replace(/log(\d)n/g, (m, b) => `log${'₀₁₂₃₄'[b]}n`).replace(/\^2/g, '²').replace(/-/g, ' − ').replace(/\+/g, ' + ');
+SITE.widgets.sheetSteps = (el, arg = {}) => {
+  let P_ = typeof arg === 'string' ? T1_STEPS[arg] : arg.key ? T1_STEPS[arg.key] : null;
+  const draw = () => {
+    if (!P_ || arg.random) P_ = t1RandSteps();
+    const exp = {};
+    let body = `<div class="t1cells"><table class="t"><tr><th>${T('Statement', '语句')}</th><th>${T('Number of steps', '步数')}</th></tr>`;
+    P_.rows.forEach(([code, cnt], k) => {
+      if (cnt !== null) exp[`r${k}`] = { v: cnt, cmp: (g, e) => T1.sameExpr(g, e), show: t1exprShow(cnt) };
+      body += `<tr><td><code style="white-space:pre">${esc(code)}</code></td><td>${cnt === null ? '' : t1in('r' + k, 'm')}</td></tr>`;
+    });
+    exp.tot = { v: P_.total, cmp: (g, e) => T1.sameExpr(g, e), show: t1exprShow(P_.total) }; exp.big = P_.big;
+    body += `<tr><td><b>${T('Total steps', '总步数')}</b></td><td>${t1in('tot', 'w')}</td></tr><tr><td><b>Big-O</b></td><td>${t1sel('big', T1_BIGO)}</td></tr></table></div>`;
+    t1Form(el, { title: `${T('Step-count table', '步数表')} — ${T(P_.t[0], P_.t[1])}`, body, exp,
+      intro: P('Method: a loop header counts the <b>number of iterations</b>; each line inside counts the same; nested lines multiply. Type expressions like <code>n-1</code>, <code>(n-1)log4n</code>, <code>n^2</code>, <code>2n(1+log2n)</code> — any equivalent form is accepted.', '方法：循环头记<b>迭代次数</b>；循环里每行同样多；嵌套就相乘。输入 <code>n-1</code>、<code>(n-1)log4n</code>、<code>n^2</code>、<code>2n(1+log2n)</code> 这类表达式——等价写法都算对。'),
+      model: `<div class="note">${T(P_.why[0], P_.why[1])}<br>${T('Total', '总步数')} = ${t1exprShow(P_.total)} → <b>${T1_BIGO.find(b => b[0] === P_.big)[1]}</b></div>`,
+      newData: arg.fixed ? null : () => { arg = { random: true }; draw(); } });
+  };
+  draw();
+};
+
+</script>
+<script>
+/* ===== course.js ===== */
+/* Demo course for study-site-builder. All content is original and written for this demo.
+   The "sample test" is FICTIONAL — it only shows how real past papers drive the site. */
+SITE.course = {
+  id: 'ssb-demo-sorting',
+  lang: 'both',
+  title: ['Sorting Algorithms — demo course', '排序算法——示例课程'],
+  chapters: [
+    ['paper', '🎯', ['Sample test (fictional)', '模拟真题（虚构）']],
+    ['ch1', 'Ch1', ['Simple sorts', '简单排序']],
+    ['ch2', 'Ch2', ['Merge sort & quick sort', '归并排序与快速排序']]
+  ],
+  plan: { title: ['A 3-day plan (example)', '三天计划（示例）'], rows: [
+    [['Day 1', '第 1 天'], ['Ch1 + 🎯 pass tables', 'Ch1 + 🎯 逐趟表'], ['Every simple sort once in the visualizer, then the answer sheets until zero wrong cells.', '每种简单排序先在可视化里走一遍，再做答题纸直到零错格。']],
+    [['Day 2', '第 2 天'], ['Ch2 + 🎯 merge / partition', 'Ch2 + 🎯 归并 / partition'], ['These are the biggest questions in the sample test.', '这是模拟真题里分值最大的题。']],
+    [['Day 3', '第 3 天'], ['🎯 Section A + mistakes', '🎯 A 部分 + 错题本'], ['Only not-mastered questions, then hand the report to an AI.', '只练没掌握的题，再把报告交给 AI。']]] },
+  homeNotes: [['note', 'This is a <b>demo</b> of <a href="https://github.com/ZengRuizu/study-site-builder">study-site-builder</a>. Every text here is original; the “sample test” is fictional. Built for your own course, the site is driven by your lecture slides and <b>your real past papers</b>.', '这是 <a href="https://github.com/ZengRuizu/study-site-builder">study-site-builder</a> 的<b>示例</b>。这里所有内容都是原创，“模拟真题”是虚构的。给你自己的课程生成时，网页由你的课件和<b>真实的历年试卷</b>驱动。']],
+  credits: ['Demo content written for study-site-builder (MIT). Sorting code listings are original.', '示例内容为 study-site-builder 原创编写（MIT 许可）。排序代码清单为原创。'],
+  mock: { quick: { ch1: 5, ch2: 5 }, full: { ch1: 10, ch2: 10 } },
+  focus: { budget: 12, outOf: 50, bank: 'paper', title: ['Where to spend your time (from the sample papers)', '时间该花在哪里（依据模拟真题）'],
+    note: ['In a real course these numbers come from counting marks per chapter in the past papers. Here they come from the two fictional sample tests.', '真实课程里，这些数字来自逐题统计历年试卷每章的分值。这里用的是两份虚构的模拟试卷。'],
+    extra: [{ t: ['🎯 Sample Section A + mistake bank', '🎯 模拟 A 部分 + 错题本'], pct: 14 }],
+    chapters: {
+      ch2: { stars: 5, pct: 46, avg: 27, marks: ['27 / 50 on average — Q2 merge (12) + Q3 partition (12) + 3 MCQs.', '平均 27 / 50——Q2 归并（12 分）+ Q3 partition（12 分）+ 3 道选择。'],
+        exam: ['A partition() trace until the first cut in both papers; a merge sort tree or a merge() table.', '两份试卷都有 partition() 追踪到第一次切分；归并树或 merge() 表。'],
+        do: ['<a href="#/paper/s3">🎯 Answer sheets</a>: partition and merge until zero wrong cells twice in a row.', '<a href="#/paper/s3">🎯 答题纸</a>：partition 和归并练到连续两次零错格。'],
+        skip: ['Nothing — the whole chapter is examined.', '没有可跳的——整章都考。'], sec: { s1: 'must', s2: 'must', s3: 'core' } },
+      ch1: { stars: 4, pct: 40, avg: 23, marks: ['23 / 50 on average — Q1 pass tables (16) + 7 MCQs.', '平均 23 / 50——Q1 逐趟表（16 分）+ 7 道选择。'],
+        exam: ['Pass tables with comparisons and swaps; which variant of selection sort the printed code uses.', '带比较和交换次数的逐趟表；题目印的选择排序是哪个版本。'],
+        do: ['Visualizer once per algorithm, then <a href="#/paper/s3">🎯 pass tables</a> for every algorithm.', '每个算法先看一遍可视化，再做 <a href="#/paper/s3">🎯 逐趟表</a>。'],
+        skip: ['Nothing — but s4 flashcards are optional.', '没有——但 s4 的记忆卡可选。'], sec: { s1: 'must', s2: 'must', s3: 'must', s4: 'core' } }
+    } }
+};
+
+</script>
+<script>
+/* ===== glossary.js ===== */
+SITE.GLOSS = {
+  'adjacent': '相邻的', 'ascending': '升序的', 'descending': '降序的', 'pivot': '枢轴（基准值）', 'partition': '划分',
+  'iteration': '迭代（一轮）', 'comparison': '比较', 'comparisons': '比较（次数）', 'efficient': '高效的', 'efficiency': '效率',
+  'recursion': '递归', 'recursive': '递归的', 'divide and conquer': '分治', 'in-place': '原地的', 'worst case': '最坏情况',
+  'best case': '最好情况', 'average case': '平均情况', 'subarray': '子数组', 'region': '区域', 'variant': '变体',
+  'merge': '合并', 'temporary': '临时的', 'invariant': '不变量', 'terminate': '终止', 'precondition': '前提条件'
+};
+
+</script>
+<script>
+/* ===== refreshers.js ===== */
+SITE.RVX.swap = () => RV('how does a swap work?', '交换是怎么做的？', `
+  ${P('You need a third variable to hold one value for a moment — otherwise the first assignment destroys it.', '需要第三个变量临时存一个值——否则第一次赋值就把它覆盖了。')}
+  ${C`
+int hold = a[i];   // keep a copy
+a[i] = a[j];
+a[j] = hold;
+`}`);
+SITE.RVX.intdiv = () => RV('why is mid = (0 + 5) / 2 equal to 2?', '为什么 mid = (0 + 5) / 2 等于 2？', `
+  ${P('In C++ <code>int / int</code> drops the decimal part: 5 / 2 = 2. So the left half of [0..5] is [0..2] — it gets the middle element.', '在 C++ 里 <code>int / int</code> 会丢掉小数：5 / 2 = 2。所以 [0..5] 的左半是 [0..2]——中间元素归左半。')}`);
+SITE.RVX.growth = () => RV('the growth order to remember', '要记住的增长顺序', `
+  ${P('1 &lt; log n &lt; n &lt; n log n &lt; n² &lt; 2ⁿ. Simple sorts are n² in the worst case; merge sort is always n log n.', '1 &lt; log n &lt; n &lt; n log n &lt; n² &lt; 2ⁿ。简单排序最坏是 n²；归并排序永远是 n log n。')}`);
+
+</script>
+<script>
+/* ===== decks.js ===== */
+DECK.bucket.simple = { t: ['Which simple sort does this describe?', '这句话描述的是哪种简单排序？'],
+  buckets: [['Bubble', '冒泡'], ['Selection', '选择'], ['Insertion', '插入']], items: [
+  ['Only ever compares neighbours', '只比较相邻的两个', 0], ['Can stop early when a pass makes no exchange', '某一趟没有交换就能提前停', 0],
+  ['Exactly one swap per pass in its basic form', '基础版每趟恰好交换一次', 1], ['Takes the same number of comparisons whatever the input order', '无论输入顺序如何，比较次数都一样', 1],
+  ['Grows a sorted region on the left, one item at a time', '左边的有序区每次增加一个', 2], ['Shifts bigger items one step to the right to make a gap', '把更大的项右移一格腾出空位', 2],
+  ['Needs only n − 1 comparisons when the data is already sorted (best case)', '数据已排好时只需 n − 1 次比较（最好情况）', 2, ['The improved bubble sort shares this property.', '改进冒泡也有这个性质。']]] };
+
+DECK.flash.ch1 = { t: ['Simple sorts — flashcards', '简单排序——记忆卡'], cards: [
+  ['Bubble sort: one pass', '冒泡排序：一趟', 'Compare neighbours left to right and swap when out of order; the biggest remaining value ends at the back.', '从左到右比较相邻项，逆序就交换；剩下的最大值落到最后。'],
+  ['Improved bubble sort', '改进冒泡排序', 'A flag records whether a pass swapped anything; a pass with no swap ends the sort (that pass still counts).', '用一个标志记录这一趟是否交换过；没交换的那一趟结束排序（这一趟仍要算）。'],
+  ['Selection sort: one pass', '选择排序：一趟', 'Find the largest value in the unsorted part and swap it into the last unsorted position.', '在未排序部分找最大值，换到未排序部分的最后一个位置。'],
+  ['Insertion sort: one pass', '插入排序：一趟', 'Take the next item and shift bigger items in the sorted part right until the gap fits it.', '取下一个元素，把有序部分里更大的项右移，直到空位适合它。'],
+  ['Comparisons in the worst case', '最坏情况的比较次数', 'n(n − 1)/2 for all three simple sorts → O(n²).', '三种简单排序都是 n(n − 1)/2 → O(n²)。'],
+  ['Best case O(n)', '最好情况 O(n)', 'Improved bubble sort and insertion sort on already sorted data. Selection sort never stops early.', '改进冒泡和插入排序（数据已有序）。选择排序永远不会提前停。']] };
+
+DECK.flash.ch2 = { t: ['Merge & quick sort — flashcards', '归并与快排——记忆卡'], cards: [
+  ['mergeSort(a, first, last)', 'mergeSort(a, first, last)', 'mid = (first + last) / 2; sort [first..mid]; sort [mid+1..last]; then merge.', 'mid = (first + last) / 2；排 [first..mid]；排 [mid+1..last]；再合并。'],
+  ['merge() precondition', 'merge() 的前提', 'Both halves are already sorted — mergeSort sorts them before calling merge.', '两半都已有序——mergeSort 在调用 merge 之前已经排好它们。'],
+  ['partition(): what is returned', 'partition() 返回什么', 'The index top where bottom and top meet (the cut). Next calls: quickSort(first, cut) and quickSort(cut + 1, last).', 'bottom 与 top 相遇处的下标 top（切分点）。接下来调用 quickSort(first, cut) 和 quickSort(cut + 1, last)。'],
+  ['Quick sort worst case', '快排最坏情况', 'The pivot is always the smallest or largest value (e.g. sorted data, first-element pivot) → O(n²).', 'pivot 总是最小或最大值（如已有序数据、取首元素为 pivot）→ O(n²)。'],
+  ['Merge sort cost', '归并排序的代价', 'O(n log n) in every case, but it needs a temporary array of size n.', '任何情况都是 O(n log n)，但需要大小为 n 的临时数组。']] };
+
+DECK.cloze.ibubble = { t: ['Write the improved bubble sort', '写出改进冒泡排序'], given: `<div class="t1lab">${T('Fill the blanks. The function sorts <code>data[0..n−1]</code> ascending and stops after a pass with no exchange.', '填空。函数把 <code>data[0..n−1]</code> 升序排列，某一趟没有交换就停止。')}</div>`, code: String.raw`
+  void BubbleSort(int data[], int n)
+  {  bool sorted = ⟦false⟧;
+     for (int pass = 1; (pass < n) && ⟦!sorted¦sorted == false⟧; pass++)
+     {  sorted = ⟦true⟧;
+        for (int x = 0; x < ⟦n - pass¦n-pass⟧; x++)
+           if (data[x] ⟦>⟧ data[x + 1])
+           {  int hold = data[x];
+              data[x] = data[x + 1];
+              data[x + 1] = ⟦hold⟧;
+              sorted = ⟦false⟧;
+           }
+     }
+  }` };
+
+DECK.judge.facts = { t: ['True or false?', '对还是错？'], labels: [['✓ True', '✓ 对'], ['✗ False', '✗ 错']], items: [
+  ['Merge sort is O(n log n) even on already sorted data.', 1, 'It always splits in halves and merges everything.', '它总是对半分、全部合并。'],
+  ['Quick sort never needs more than O(n log n) time.', 0, 'Worst case O(n²) when the pivot is always the smallest or largest.', '若 pivot 总是最小或最大，最坏是 O(n²)。'],
+  ['Selection sort makes at most n − 1 swaps.', 1, 'One swap per pass, n − 1 passes.', '每趟一次交换，共 n − 1 趟。'],
+  ['Insertion sort is O(n²) on already sorted data.', 0, 'Sorted data: each item needs one comparison → O(n).', '已排好：每个元素只比一次 → O(n)。'],
+  ['partition() returns the pivot value.', 0, 'It returns an index — the cut point.', '它返回下标——切分点。'],
+  ['merge() only works when both halves are already sorted.', 1, 'That is why mergeSort sorts both halves first.', '所以 mergeSort 先把两半排好。']] };
+
+</script>
+<script>
+/* ===== paper.js ===== */
+/* 🎯 Sample test — FICTIONAL papers written for this demo. In a real course this chapter is built
+   from the lecturer's past papers: blueprint, marks per chapter, Section A with verified keys,
+   and every Section B format as an interactive answer sheet. */
+const PTAB = (rows, head) => `<table class="t"><tr>${head.map(h => `<th>${h}</th>`).join('')}</tr>${rows.map(r => `<tr>${r.map(c => `<td>${Array.isArray(c) ? T(c[0], c[1]) : c}</td>`).join('')}</tr>`).join('')}</table>`;
+
+SITE.chapter({ id: 'paper', num: '🎯', t: ['Sample test (fictional)', '模拟真题（虚构）'], sections: [
+
+{ id: 's1', t: ['Blueprint: what the test looks like', '蓝图：考试长什么样'], html: () => `
+${BOX('note', 'Both “past papers” here are <b>invented</b> for the demo. With your own course you drop your real papers into the slides folder; the AI counts the marks per chapter and builds this page from them.', '这里的两份“历年试卷”都是为示例<b>虚构</b>的。用在你自己的课程时，把真实试卷放进课件文件夹；AI 会统计每章分值并据此生成这一页。')}
+<div class="big-idea"><span class="ico">🔑</span><div>${T('Both papers share one skeleton: 10 MCQs + 3 structured questions. 40 of the 50 marks are <b>procedures</b> (trace a table) — practised = guaranteed.', '两份试卷骨架一样：10 道选择 + 3 道结构题。50 分里有 40 分是<b>套路题</b>（填追踪表）——练熟就稳拿。')}</div></div>
+${PTAB([
+  ['A', ['10 MCQs × 1', '10 道选择 × 1'], '10', ['complexity facts, pass results, which sort fits a situation', '复杂度事实、某趟结果、什么情况选什么排序']],
+  ['B Q1', ['Simple sorts', '简单排序'], '16', ['two pass tables with comparisons and swaps', '两张逐趟表，含比较和交换次数']],
+  ['B Q2', ['Merge sort', '归并排序'], '12', ['merge sort tree, or a merge() table', '归并树，或 merge() 追踪表']],
+  ['B Q3', ['Quick sort', '快速排序'], '12', ['partition() until the first cut + next calls', 'partition() 追踪到第一次切分 + 接下来的调用']]], [T('Part', '部分'), T('Content', '内容'), T('Marks', '分值'), T('What they ask', '考什么')])}
+${focusTable()}
+${BOX('exam', 'Rule that wins marks: when a question prints code, follow the printed code — even if your notes use a different variant.', '拿分规则：题目印了代码就照印的代码做——即使你笔记里是另一个版本。')}
+`},
+
+{ id: 's2', t: ['Section A — sample papers', 'A 部分——模拟真题'], html: () => `
+${P('Do each set like the exam: 10 minutes, no notes. Then read every explanation, including the ones you got right.', '每套都像考试一样做：10 分钟、不看笔记。然后看每道题的解析，做对的也要看。')}
+${QZ('paper', 'sA', ['Sample paper 1 — Section A', '模拟试卷 1——A 部分'])}
+${QZ('paper', 'sB', ['Sample paper 2 — Section A', '模拟试卷 2——A 部分'])}
+`},
+
+{ id: 's3', t: ['Section B — answer sheets', 'B 部分——答题纸'], html: () => `
+${P('Same layouts as the paper. Fill every cell, press <b>Check</b>, and repeat with 🎲 new data until a sheet comes back with zero wrong cells twice in a row.', '和试卷同样的格式。填满每一格再按<b>检查</b>，然后用 🎲 换数据重做，直到连续两次零错格。')}
+<h2>${T('Q1 — pass tables (16 marks)', 'Q1——逐趟表（16 分）')}</h2>
+${W('sheetPass', { arr: [8, 3, 6, 2, 9], alg: 'ibubble', fixed: true, title: ['Paper 1 Q1(a): improved bubble sort', '试卷 1 Q1(a)：改进冒泡'] })}
+${W('sheetPass', { arr: [8, 3, 6, 2, 9], alg: 'selection', fixed: true, title: ['Paper 1 Q1(b): selection sort (largest → end)', '试卷 1 Q1(b)：选择排序（最大值放末尾）'] })}
+${W('sheetPass', { arr: [12, 5, 17, 9, 3, 14], alg: 'insertionDesc', fixed: true, vertical: true, title: ['Paper 2 Q1: insertion sort, descending', '试卷 2 Q1：插入排序降序'] })}
+${W('sheetBubbleRows', { arr: [6, 2, 8, 4], fixed: true })}
+${W('sheetPass', { random: true, alg: 'insertion' })}
+<h2>${T('Q2 — merge sort (12 marks)', 'Q2——归并排序（12 分）')}</h2>
+${W('sheetMergeTree', { arr: [31, 12, 45, 7, 26, 18], fixed: true, title: ['Paper 1 Q2', '试卷 1 Q2'] })}
+${W('sheetMergeTable', { list: [3, 11, 20, 6, 9, 14], mid: 2, fixed: true, title: ['Paper 2 Q2', '试卷 2 Q2'] })}
+${W('sheetMergeTree', { random: true, title: ['random array', '随机数组'] })}
+<h2>${T('Q3 — partition() (12 marks)', 'Q3——partition()（12 分）')}</h2>
+${W('sheetPartition', { arr: [6, 11, 2, 9, 4, 13, 1], fixed: true, title: ['Paper 1 Q3', '试卷 1 Q3'] })}
+${W('sheetPartition', { arr: ['M', 'R', 'C', 'T', 'A', 'K'], fixed: true, title: ['Paper 2 Q3 — letters', '试卷 2 Q3——字母'] })}
+${W('sheetPartition', { random: true, title: ['random array (unlimited)', '随机数组（无限）'] })}
+`}
+]});
+
+SITE.bank('paper', [
+ /* sample paper 1 */
+ { g: 'sA', c: 'ch1', t: 'mcq', q: ['[P1 Q1] Which sort finishes in one pass when the data is already in order?', '[P1 Q1] 数据已经有序时，哪种排序一趟就结束？'], o: [['Basic bubble sort', '基础冒泡'], ['Improved bubble sort', '改进冒泡'], ['Selection sort', '选择排序'], ['Merge sort', '归并排序']], a: 1 },
+ { g: 'sA', c: 'ch1', t: 'mcq', q: ['[P1 Q2] Basic bubble sort on 6 items: total comparisons?', '[P1 Q2] 基础冒泡排序 6 个元素：一共比较几次？'], o: ['6', '15', '30', '36'], a: 1, e: ['5 + 4 + 3 + 2 + 1 = 15.', '5 + 4 + 3 + 2 + 1 = 15。'] },
+ { g: 'sA', c: 'ch1', t: 'mcq', q: ['[P1 Q3] Selection sort (largest → end) on <code>[8 3 6 2 9]</code>: array after pass 1?', '[P1 Q3] 选择排序（最大值放末尾）<code>[8 3 6 2 9]</code>：第 1 趟后？'], o: ['8 3 6 2 9', '3 6 2 8 9', '2 3 6 8 9', '9 3 6 2 8'], a: 0, e: ['9 is already last → swapped with itself; the array is unchanged.', '9 已在最后 → 和自己交换；数组不变。'] },
+ { g: 'sA', c: 'ch2', t: 'mcq', q: ['[P1 Q4] partition() returns…', '[P1 Q4] partition() 返回……'], o: [['the pivot value', 'pivot 的值'], ['the index of the cut', '切分点的下标'], ['the sorted array', '排好的数组'], ['the number of swaps', '交换次数']], a: 1 },
+ { g: 'sA', c: 'ch2', t: 'mcq', q: ['[P1 Q5] mergeSort(a, 0, 5): first two calls?', '[P1 Q5] mergeSort(a, 0, 5)：前两个调用？'], o: ['(0, 2) and (3, 5)', '(0, 3) and (4, 5)', '(0, 2) and (2, 5)', '(0, 1) and (2, 5)'], a: 0, e: ['mid = 5 / 2 = 2.', 'mid = 5 / 2 = 2。'] },
+ /* sample paper 2 */
+ { g: 'sB', c: 'ch1', t: 'mcq', q: ['[P2 Q1] Insertion sort on reverse-ordered data of n items makes how many comparisons?', '[P2 Q1] 插入排序处理 n 个逆序元素要比较几次？'], o: ['n − 1', 'n(n−1)/2', 'n log n', 'n²'], a: 1 },
+ { g: 'sB', c: 'ch1', t: 'mcq', q: ['[P2 Q2] Which sort always makes n(n−1)/2 comparisons, whatever the input?', '[P2 Q2] 无论输入如何，哪种排序永远比较 n(n−1)/2 次？'], o: [['Selection sort', '选择排序'], ['Insertion sort', '插入排序'], ['Improved bubble sort', '改进冒泡'], ['Quick sort', '快速排序']], a: 0 },
+ { g: 'sB', c: 'ch2', t: 'mcq', q: ['[P2 Q3] Which sort is not in place?', '[P2 Q3] 哪种排序不是原地的？'], o: [['Merge sort', '归并排序'], ['Quick sort', '快速排序'], ['Selection sort', '选择排序'], ['Insertion sort', '插入排序']], a: 0 },
+ { g: 'sB', c: 'ch2', t: 'mcq', q: ['[P2 Q4] Quick sort is O(n²) when…', '[P2 Q4] 快排什么时候是 O(n²)？'], o: [['the pivot always splits evenly', 'pivot 总是均匀切分'], ['the pivot is always the smallest or largest', 'pivot 总是最小或最大'], ['n is even', 'n 是偶数'], ['the array has duplicates', '数组有重复值']], a: 1 },
+ { g: 'sB', c: 'ch2', t: 'mcq', q: ['[P2 Q5] merge() of <code>[1 4]</code> and <code>[2 3]</code>: how many comparisons?', '[P2 Q5] merge() 合并 <code>[1 4]</code> 和 <code>[2 3]</code>：比较几次？'], o: ['2', '3', '4', '1'], a: 1, e: ['1<2 → 1 · 4>2 → 2 · 4>3 → 3 · right half empty, copy 4 → 3 comparisons.', '1<2 → 1 · 4>2 → 2 · 4>3 → 3 · 右半空了，复制 4 → 3 次比较。'] }
+]);
+
+</script>
+<script>
+/* ===== ch1.js ===== */
+/* Ch1 — simple sorts (original demo content) */
+SITE.chapter({ id: 'ch1', num: 'Ch1', t: ['Simple sorts', '简单排序'], sections: [
+
+{ id: 's1', t: ['Bubble sort (+ improved)', '冒泡排序（含改进版）'], html: () => `
+<div class="big-idea"><span class="ico">🔑</span><div>${T('One idea per algorithm is enough to rebuild the code: <b>bubble</b> = neighbours swap, <b>selection</b> = pick the extreme, <b>insertion</b> = slide into place.', '每个算法记住一个核心动作就能写出代码：<b>冒泡</b> = 邻居交换，<b>选择</b> = 挑出最值，<b>插入</b> = 滑进位置。')}</div></div>
+${P('<b>Strategy</b>: walk through the array comparing <b>adjacent</b> pairs; swap any pair that is out of order. After one pass the largest value has moved to the last position, so each later pass can stop one place earlier.', '<b>策略</b>：从头到尾比较<b>相邻</b>的两项，顺序不对就交换。一趟之后最大值到了最后一个位置，所以之后每趟可以少比一个。')}
+${W('sortViz', { alg: 'bubble', arr: [5, 1, 4, 2, 8], algs: ['bubble', 'ibubble'], presets: [[5, 1, 4, 2, 8], [9, 7, 5, 3, 1], [1, 2, 4, 3, 5], [1, 2, 3, 4, 5]] })}
+${SITE.RVX.swap()}
+<h2>${T('Counting the work', '数工作量')}</h2>
+${L([['Basic version: (n−1) + (n−2) + … + 1 = <b>n(n−1)/2</b> comparisons in every case → O(n²).', '基础版：(n−1) + (n−2) + … + 1 = <b>n(n−1)/2</b> 次比较，任何情况都一样 → O(n²)。'],
+ ['Improved version: a flag <code>sorted</code> is set to true at the start of each pass and to false on any swap. A pass with no swap ends the sort — <b>that pass is still counted</b>.', '改进版：每趟开始把 <code>sorted</code> 设为 true，发生交换就设为 false。没有交换的那一趟结束排序——<b>这一趟仍要算</b>。'],
+ ['Improved version on sorted data: one pass, n − 1 comparisons → best case <b>O(n)</b>.', '改进版遇到已排好的数据：一趟、n − 1 次比较 → 最好情况 <b>O(n)</b>。']])}
+${W('codeCloze', 'ibubble')}
+${QZ('ch1', 'bubble')}
+`},
+
+{ id: 's2', t: ['Selection sort', '选择排序'], html: () => `
+${P('<b>Strategy</b>: in each pass, find the <b>largest</b> value in the unsorted part and swap it into the <b>last unsorted position</b>. The sorted region grows from the right, one item per pass.', '<b>策略</b>：每趟在未排序部分找<b>最大值</b>，换到<b>未排序部分的最后一个位置</b>。有序区从右边长起，每趟加一个。')}
+${W('sortViz', { alg: 'selection', arr: [4, 9, 2, 7, 1], algs: ['selection'], presets: [[4, 9, 2, 7, 1], [3, 8, 6, 1, 7], [1, 2, 3, 4, 5]] })}
+${L([['Comparisons: always n(n−1)/2 — it must look at every unsorted item to be sure it found the largest. No early stop.', '比较次数：永远是 n(n−1)/2——必须看完所有未排序项才能确定最大值。不会提前停。'],
+ ['Swaps: exactly one per pass in the basic code (even a value swapped with itself) → n − 1 swaps. The improved version skips the swap when the largest is already in place.', '交换次数：基础代码每趟恰好一次（即使是自己和自己换）→ n − 1 次。改进版在最大值已在位时跳过交换。'],
+ ['Some textbooks select the <b>smallest</b> and move it to the <b>front</b>. Same idea, mirrored. In an exam, follow whichever code is printed.', '有些教材选<b>最小值</b>放到<b>前面</b>。思路一样，方向相反。考试时照印的代码做。']])}
+${BOX('exam', 'A classic trap: the array does not change in a pass, yet the pass still counts one swap in the basic version (the largest was swapped with itself).', '经典陷阱：某一趟数组没变，但基础版这一趟仍然算一次交换（最大值和自己交换）。')}
+${QZ('ch1', 'selection')}
+`},
+
+{ id: 's3', t: ['Insertion sort', '插入排序'], html: () => `
+${P('<b>Strategy</b>: the left part is sorted. Take the next item, shift every bigger item in the sorted part one place right, and drop the item into the gap.', '<b>策略</b>：左边是有序区。取下一个元素，把有序区里比它大的项都右移一格，再把它放进空位。')}
+${W('sortViz', { alg: 'insertion', arr: [6, 3, 8, 1], algs: ['insertion'], presets: [[6, 3, 8, 1], [9, 4, 6, 2, 7], [1, 2, 3, 4, 5, 6], [6, 5, 4, 3, 2, 1]] })}
+${L([['Best case (already sorted): each new item needs one comparison → n − 1 comparisons, <b>O(n)</b>.', '最好情况（已排好）：每个新元素只比一次 → n − 1 次比较，<b>O(n)</b>。'],
+ ['Worst case (reverse order): the item slides all the way to the front every time → n(n−1)/2 comparisons, <b>O(n²)</b>.', '最坏情况（逆序）：每次都滑到最前面 → n(n−1)/2 次比较，<b>O(n²)</b>。'],
+ ['For descending order, flip the comparison: shift items that are <b>smaller</b>.', '要降序就把比较反过来：右移比它<b>小</b>的项。']])}
+${QZ('ch1', 'insertion')}
+`},
+
+{ id: 's4', t: ['Compare the three + flashcards', '三者对比 + 记忆卡'], html: () => `
+<table class="t"><tr><th></th><th>${T('Best', '最好')}</th><th>${T('Worst', '最坏')}</th><th>${T('Early stop?', '能提前停？')}</th></tr>
+<tr><td>${T('Bubble (basic)', '冒泡（基础）')}</td><td>O(n²)</td><td>O(n²)</td><td>✗</td></tr>
+<tr><td>${T('Bubble (improved)', '冒泡（改进）')}</td><td>O(n)</td><td>O(n²)</td><td>✓</td></tr>
+<tr><td>${T('Selection', '选择')}</td><td>O(n²)</td><td>O(n²)</td><td>✗</td></tr>
+<tr><td>${T('Insertion', '插入')}</td><td>O(n)</td><td>O(n²)</td><td>✓</td></tr></table>
+${SITE.RVX.growth()}
+${W('bucketGame', 'simple')}
+${W('flashcards', 'ch1')}
+${W('sheetSteps', { key: 'triangle' })}
+`},
+
+{ id: 'test', t: ['Chapter test', '章节测试'], html: () => `
+${P('New questions — none of them appear in the sections above. Aim for zero wrong before moving on.', '全新题目——都没在上面的小节出现过。全对再往下走。')}
+${QZ('ch1', 'final', ['Chapter 1 test', '第 1 章测试'])}
+${QZ('ch1', 'gen', ['🎲 Random pass drills (unlimited)', '🎲 随机逐趟练习（无限）'])}
+`}
+]});
+
+SITE.bank('ch1', [
+ { g: 'bubble', t: 'fill', q: ['Bubble sort <code>[5 1 4 2 8]</code> ascending. Array after <b>pass 1</b>?', '冒泡排序 <code>[5 1 4 2 8]</code> 升序。<b>第 1 趟</b>后的数组？'], a: ['1 4 2 5 8'], e: ['5/1 swap; 5/4 swap; 5/2 swap; 5/8 no swap → 1 4 2 5 8.', '5/1 换；5/4 换；5/2 换；5/8 不换 → 1 4 2 5 8。'] },
+ { g: 'bubble', t: 'mcq', q: ['Basic bubble sort on 5 items: how many comparisons in total?', '基础冒泡排序处理 5 个元素：一共比较几次？'], o: ['5', '10', '20', '25'], a: 1, e: ['4 + 3 + 2 + 1 = 10 = n(n−1)/2.', '4 + 3 + 2 + 1 = 10 = n(n−1)/2。'] },
+ { g: 'bubble', t: 'mcq', q: ['Improved bubble sort on <code>[1 2 4 3 5]</code>: how many passes run?', '改进冒泡排序处理 <code>[1 2 4 3 5]</code>：一共运行几趟？'], o: ['1', '2', '3', '4'], a: 1, e: ['Pass 1 swaps 4/3; pass 2 makes no swap and ends the sort — it still counts.', '第 1 趟交换 4/3；第 2 趟无交换，排序结束——这一趟也要算。'] },
+ { g: 'selection', t: 'fill', q: ['Selection sort (largest → end) on <code>[4 9 2 7 1]</code>. Array after <b>pass 1</b>?', '选择排序（最大值放末尾）处理 <code>[4 9 2 7 1]</code>。<b>第 1 趟</b>后的数组？'], a: ['4 1 2 7 9'], e: ['Largest = 9 at index 1; swap with the last item 1 → 4 1 2 7 9.', '最大值 9 在下标 1；与最后一项 1 交换 → 4 1 2 7 9。'] },
+ { g: 'selection', t: 'mcq', q: ['Same array <code>[4 9 2 7 1]</code>: what happens in pass 2?', '同一数组 <code>[4 9 2 7 1]</code>：第 2 趟发生什么？'], o: [['7 is swapped with itself — the array does not change', '7 和自己交换——数组不变'], ['7 and 2 are swapped', '7 和 2 交换'], ['The sort stops', '排序结束'], ['4 moves to the end', '4 移到末尾']], a: 0, e: ['After pass 1: 4 1 2 7 | 9. Largest of 4 1 2 7 is 7, already last in the unsorted part → swapped with itself.', '第 1 趟后：4 1 2 7 | 9。4 1 2 7 中最大是 7，已在未排序部分末尾 → 和自己交换。'] },
+ { g: 'selection', t: 'mcq', q: ['Basic selection sort on n items makes how many swaps?', '基础选择排序处理 n 个元素交换几次？'], o: ['0', 'n − 1', 'n(n−1)/2', ['depends on the data', '取决于数据']], a: 1 },
+ { g: 'insertion', t: 'fill', q: ['Insertion sort <code>[6 3 8 1]</code> ascending. Array after <b>pass 3</b> (the last)?', '插入排序 <code>[6 3 8 1]</code> 升序。<b>第 3 趟</b>（最后一趟）后的数组？'], a: ['1 3 6 8'], e: ['Pass 1: 3 6 8 1 · pass 2: 3 6 8 1 · pass 3: 1 slides to the front → 1 3 6 8.', '第 1 趟：3 6 8 1 · 第 2 趟：3 6 8 1 · 第 3 趟：1 滑到最前 → 1 3 6 8。'] },
+ { g: 'insertion', t: 'mcq', q: ['Insertion sort on <code>[6 3 8 1]</code>: total comparisons?', '插入排序处理 <code>[6 3 8 1]</code>：一共比较几次？'], o: ['3', '5', '6', '4'], a: 1, e: ['Pass 1: 1 (6 > 3) · pass 2: 1 (6 < 8, stop) · pass 3: 3 (1 passes 8, 6, 3) → 5.', '第 1 趟：1 次 · 第 2 趟：1 次（6 < 8 停）· 第 3 趟：3 次（1 越过 8、6、3）→ 5。'] },
+ /* chapter test */
+ { g: 'final', t: 'fill', q: ['Bubble sort <code>[6 2 9 1 5]</code> ascending. Array after <b>pass 2</b>?', '冒泡排序 <code>[6 2 9 1 5]</code> 升序。<b>第 2 趟</b>后的数组？'], a: ['2 1 5 6 9'], e: ['Pass 1: 2 6 1 5 9 · pass 2: 2 1 5 6 9.', '第 1 趟：2 6 1 5 9 · 第 2 趟：2 1 5 6 9。'] },
+ { g: 'final', t: 'fill', q: ['Basic bubble sort <code>[6 2 9 1 5]</code>: total number of <b>swaps</b>?', '基础冒泡排序 <code>[6 2 9 1 5]</code>：一共<b>交换</b>几次？'], a: ['6'], e: ['3 + 2 + 1 + 0 = 6.', '3 + 2 + 1 + 0 = 6。'] },
+ { g: 'final', t: 'fill', q: ['Selection sort (largest → end) <code>[3 8 6 1 7]</code>. Array after <b>pass 2</b>?', '选择排序（最大值放末尾）<code>[3 8 6 1 7]</code>。<b>第 2 趟</b>后的数组？'], a: ['3 1 6 7 8'], e: ['Pass 1: 8 ↔ 7 → 3 7 6 1 8 · pass 2: 7 ↔ 1 → 3 1 6 7 8.', '第 1 趟：8 ↔ 7 → 3 7 6 1 8 · 第 2 趟：7 ↔ 1 → 3 1 6 7 8。'] },
+ { g: 'final', t: 'fill', q: ['Insertion sort <code>[9 4 6 2 7]</code> ascending: total <b>comparisons</b>?', '插入排序 <code>[9 4 6 2 7]</code> 升序：一共<b>比较</b>几次？'], a: ['8'], e: ['1 + 2 + 3 + 2 = 8 (pass 4: 7 passes 9, then 6 < 7 stops it).', '1 + 2 + 3 + 2 = 8（第 4 趟：7 越过 9，遇到 6 < 7 停）。'] },
+ { g: 'final', t: 'mcq', q: ['Improved bubble sort on <code>[2 1 3 5 4]</code>: comparisons in total?', '改进冒泡排序处理 <code>[2 1 3 5 4]</code>：一共比较几次？'], o: ['4', '7', '9', '10'], a: 1, e: ['Pass 1 (4 comparisons) fixes both pairs; pass 2 (3 comparisons) has no swap → 7.', '第 1 趟（4 次比较）把两对都换好；第 2 趟（3 次）无交换 → 7。'] },
+ { g: 'final', t: 'mcq', q: ['Improved selection sort on <code>[1 5 3 4 9]</code>: how many swaps?', '改进选择排序处理 <code>[1 5 3 4 9]</code>：交换几次？'], o: ['0', '1', '2', '4'], a: 2, e: ['Pass 1: 9 in place (skip) · pass 2: 5 ↔ 4 · pass 3: 4 ↔ 3 · pass 4: in place → 2 swaps.', '第 1 趟：9 已在位（跳过）· 第 2 趟：5 ↔ 4 · 第 3 趟：4 ↔ 3 · 第 4 趟：已在位 → 2 次。'] },
+ { g: 'final', t: 'mcq', q: ['Data is almost sorted. Which simple sort is the worst choice?', '数据几乎有序。哪种简单排序最不合适？'], o: [['Improved bubble sort', '改进冒泡'], ['Insertion sort', '插入排序'], ['Selection sort', '选择排序'], ['They are all the same', '都一样']], a: 2, e: ['Selection sort always makes n(n−1)/2 comparisons; the other two stop early or barely shift.', '选择排序永远 n(n−1)/2 次比较；另外两个会提前停或几乎不用移动。'] },
+ { g: 'final', t: 'multi', q: ['Which sorts are O(n) in their best case? (select all)', '哪些排序最好情况是 O(n)？（多选）'], o: [['Basic bubble sort', '基础冒泡'], ['Improved bubble sort', '改进冒泡'], ['Selection sort', '选择排序'], ['Insertion sort', '插入排序']], a: [1, 3] },
+ { g: 'final', t: 'mcq', q: ['Insertion sort, descending, on <code>[2 7 4 9]</code>. Array after pass 2?', '插入排序降序处理 <code>[2 7 4 9]</code>。第 2 趟后的数组？'], o: ['7 2 4 9', '7 4 2 9', '2 4 7 9', '9 7 4 2'], a: 1, e: ['Pass 1: 7 2 4 9 · pass 2: 4 slides past 2 → 7 4 2 9.', '第 1 趟：7 2 4 9 · 第 2 趟：4 越过 2 → 7 4 2 9。'] },
+ { g: 'gen', t: 'gen', make: () => passDrill('bubble') },
+ { g: 'gen', t: 'gen', make: () => passDrill('selection') },
+ { g: 'gen', t: 'gen', make: () => passDrill('insertion') }
+]);
+
+</script>
+<script>
+/* ===== ch2.js ===== */
+/* Ch2 — merge sort & quick sort (original demo content) */
+SITE.chapter({ id: 'ch2', num: 'Ch2', t: ['Merge sort & quick sort', '归并排序与快速排序'], sections: [
+
+{ id: 's1', t: ['Merge sort', '归并排序'], html: () => `
+<div class="big-idea"><span class="ico">🔑</span><div>${T('Both are divide and conquer, but they do the hard work at opposite ends: merge sort splits <b>blindly by position</b> and works when <b>joining</b>; quick sort works when <b>splitting by value</b> and needs no joining.', '两者都是分治，但把难活放在两头：归并<b>按位置盲分</b>，难在<b>合并</b>；快排<b>按数值划分</b>时干活，不需要合并。')}</div></div>
+${C`
+void mergeSort(int a[], int first, int last) {
+    if (first < last) {
+        int mid = (first + last) / 2;
+        mergeSort(a, first, mid);       // left half includes mid
+        mergeSort(a, mid + 1, last);
+        merge(a, first, mid, last);     // both halves are sorted now
+    }
+}`}
+${SITE.RVX.intdiv()}
+${W('sortViz', { alg: 'merge', arr: [9, 3, 7, 1, 8, 2, 5], algs: ['merge'], presets: [[9, 3, 7, 1, 8, 2, 5], [3, 8, 10, 1, 9], [1, 2, 3, 4, 5, 6]] })}
+${L([['merge() walks two pointers through the halves, copying the smaller front item into a temporary array, then copies the leftovers.', 'merge() 用两个指针走两半，每次把较小的队头复制到临时数组，最后复制剩余部分。'],
+ ['Every level of the split tree does n work and there are about log₂n levels → <b>O(n log n) in every case</b>.', '分裂树每层做 n 的工作，大约 log₂n 层 → <b>任何情况都是 O(n log n)</b>。'],
+ ['The price: a temporary array of size n (not in-place).', '代价：一个大小为 n 的临时数组（不是原地排序）。']])}
+${QZ('ch2', 'merge')}
+`},
+
+{ id: 's2', t: ['Quick sort & partition()', '快速排序与 partition()'], html: () => `
+${C`
+int partition(int a[], int first, int last) {
+    int pivot = a[first];
+    int bottom = first - 1, top = last + 1;
+    while (true) {
+        do { top--; }    while (a[top] > pivot);     // top stops at a value <= pivot
+        do { bottom++; } while (a[bottom] < pivot);  // bottom stops at a value >= pivot
+        if (bottom < top) swap(a[bottom], a[top]);
+        else return top;                             // the cut point
+    }
+}
+// quickSort(a, first, cut);  quickSort(a, cut + 1, last);`}
+${W('sortViz', { alg: 'quick', arr: [7, 2, 9, 4, 1, 8], algs: ['quick'], presets: [[7, 2, 9, 4, 1, 8], [4, 8, 1, 6, 3], [1, 2, 3, 4, 5, 6]] })}
+${L([['partition() returns an <b>index</b> (the cut), not the pivot value. Everything in [first..cut] ≤ pivot ≤ everything in [cut+1..last].', 'partition() 返回<b>下标</b>（切分点），不是 pivot 的值。[first..cut] 里的都 ≤ pivot ≤ [cut+1..last] 里的。'],
+ ['Good pivots split evenly → O(n log n). A pivot that is always the smallest or largest (sorted data with a first-element pivot) → <b>O(n²)</b>.', '好的 pivot 均匀切分 → O(n log n)。若 pivot 总是最小或最大（已排序数据 + 取首元素）→ <b>O(n²)</b>。']])}
+${BOX('exam', 'Trace questions usually stop at the <b>first cut</b>: write each swap and the array after it, then the returned index and the next two calls.', '追踪题通常到<b>第一次切分</b>为止：写出每次交换和交换后的数组，再写返回的下标和接下来的两次调用。')}
+${QZ('ch2', 'quick')}
+`},
+
+{ id: 's3', t: ['Compare + flashcards', '对比 + 记忆卡'], html: () => `
+<table class="t"><tr><th></th><th>${T('Divides by', '按什么分')}</th><th>${T('Work happens in', '主要工作在')}</th><th>${T('Worst', '最坏')}</th><th>${T('Extra memory', '额外内存')}</th></tr>
+<tr><td>${T('Merge sort', '归并')}</td><td>${T('position (halves)', '位置（对半）')}</td><td>merge()</td><td>O(n log n)</td><td>O(n)</td></tr>
+<tr><td>${T('Quick sort', '快排')}</td><td>${T('value (pivot)', '数值（pivot）')}</td><td>partition()</td><td>O(n²)</td><td>${T('in place', '原地')}</td></tr></table>
+${W('flashcards', 'ch2')}
+${W('judgeDrill', 'facts')}
+`},
+
+{ id: 'test', t: ['Chapter test', '章节测试'], html: () => `
+${QZ('ch2', 'final', ['Chapter 2 test', '第 2 章测试'])}
+`}
+]});
+
+SITE.bank('ch2', [
+ { g: 'merge', t: 'mcq', q: ['mergeSort(a, 0, 6): what are the first two recursive calls?', 'mergeSort(a, 0, 6)：前两个递归调用是？'], o: ['(0, 3) and (4, 6)', '(0, 2) and (3, 6)', '(0, 3) and (3, 6)', '(1, 3) and (4, 6)'], a: 0, e: ['mid = (0 + 6) / 2 = 3; left = [0..3], right = [4..6].', 'mid = (0 + 6) / 2 = 3；左 = [0..3]，右 = [4..6]。'] },
+ { g: 'merge', t: 'fill', q: ['merge() on halves <code>[3 8 10]</code> and <code>[1 9]</code>. Result?', 'merge() 合并 <code>[3 8 10]</code> 和 <code>[1 9]</code>。结果？'], a: ['1 3 8 9 10'] },
+ { g: 'merge', t: 'mcq', q: ['Merge sort on already sorted data is…', '归并排序处理已排好的数据是……'], o: ['O(n)', 'O(n log n)', 'O(n²)', 'O(log n)'], a: 1 },
+ { g: 'quick', t: 'fill', q: ['partition() on <code>[7 2 9 4 1 8]</code> (pivot = 7). Array when it returns?', 'partition() 处理 <code>[7 2 9 4 1 8]</code>（pivot = 7）。返回时的数组？'], a: ['1 2 4 7 9 8'], e: ['swap 7↔1 → 1 2 9 4 7 8 · swap 9↔7 → 1 2 7 4 9 8 · swap 7↔4 → 1 2 4 7 9 8 · bottom ≥ top → return 3.', '交换 7↔1 → 1 2 9 4 7 8 · 交换 9↔7 → 1 2 7 4 9 8 · 交换 7↔4 → 1 2 4 7 9 8 · bottom ≥ top → 返回 3。'] },
+ { g: 'quick', t: 'mcq', q: ['Same array: which calls come next?', '同一数组：接下来调用哪两个？'], o: ['quickSort(0, 3) and quickSort(4, 5)', 'quickSort(0, 2) and quickSort(4, 5)', 'quickSort(0, 3) and quickSort(3, 5)', 'quickSort(1, 3) and quickSort(4, 5)'], a: 0, e: ['cut = 3 → (first, cut) = (0, 3) and (cut + 1, last) = (4, 5).', 'cut = 3 → (first, cut) = (0, 3) 和 (cut + 1, last) = (4, 5)。'] },
+ /* chapter test */
+ { g: 'final', t: 'mcq', q: ['mergeSort(a, 2, 7): the value of mid?', 'mergeSort(a, 2, 7)：mid 是多少？'], o: ['4', '4.5', '5', '3'], a: 0, e: ['(2 + 7) / 2 = 9 / 2 = 4 in integer division.', '(2 + 7) / 2 = 9 / 2 = 4（整数除法）。'] },
+ { g: 'final', t: 'mcq', q: ['How many calls in total does mergeSort make for 7 items (including the first call)?', 'mergeSort 处理 7 个元素一共调用几次（含第一次）？'], o: ['7', '13', '14', '12'], a: 1, e: ['A binary split tree with 7 leaves has 7 − 1 = 6 internal nodes → 13 calls.', '7 个叶子的二叉分裂树有 7 − 1 = 6 个内部结点 → 13 次调用。'] },
+ { g: 'final', t: 'fill', q: ['merge() on halves <code>[2 5 9]</code> and <code>[4 6 7]</code>. Result?', 'merge() 合并 <code>[2 5 9]</code> 和 <code>[4 6 7]</code>。结果？'], a: ['2 4 5 6 7 9'] },
+ { g: 'final', t: 'fill', q: ['partition() on <code>[4 8 1 6 3]</code> (pivot = 4). Which index does it return?', 'partition() 处理 <code>[4 8 1 6 3]</code>（pivot = 4）。返回哪个下标？'], a: ['2'], e: ['4↔3 → 3 8 1 6 4 · 8↔4 → 3 4 1 6 8 · 4↔1 → 3 1 4 6 8 · return 2.', '4↔3 → 3 8 1 6 4 · 8↔4 → 3 4 1 6 8 · 4↔1 → 3 1 4 6 8 · 返回 2。'] },
+ { g: 'final', t: 'fill', q: ['partition() on <code>[5 9 2 8 1 7]</code> (pivot = 5). Array when it returns?', 'partition() 处理 <code>[5 9 2 8 1 7]</code>（pivot = 5）。返回时的数组？'], a: ['1 2 5 8 9 7'], e: ['5↔1 → 1 9 2 8 5 7 · 9↔5 → 1 5 2 8 9 7 · 5↔2 → 1 2 5 8 9 7 · return 2.', '5↔1 → 1 9 2 8 5 7 · 9↔5 → 1 5 2 8 9 7 · 5↔2 → 1 2 5 8 9 7 · 返回 2。'] },
+ { g: 'final', t: 'mcq', q: ['partition() on <code>[3 1 4 7 2]</code> (pivot = 3) returns cut = 2. Next calls?', 'partition() 处理 <code>[3 1 4 7 2]</code>（pivot = 3）返回 cut = 2。接下来调用？'], o: ['quickSort(0, 2) and quickSort(3, 4)', 'quickSort(0, 1) and quickSort(3, 4)', 'quickSort(0, 2) and quickSort(2, 4)', 'quickSort(0, 1) and quickSort(2, 4)'], a: 0 },
+ { g: 'final', t: 'mcq', q: ['Quick sort with a first-element pivot is slowest on…', '取首元素为 pivot 的快排在哪种数据上最慢？'], o: [['already sorted data', '已排好的数据'], ['random data', '随机数据'], ['data with all different values', '值都不同的数据'], ['short arrays', '短数组']], a: 0, e: ['Each partition peels off one item → n levels → O(n²).', '每次划分只剥掉一个元素 → n 层 → O(n²)。'] },
+ { g: 'final', t: 'multi', q: ['Which are true for merge sort? (select all)', '关于归并排序哪些正确？（多选）'], o: [['Needs a temporary array', '需要临时数组'], ['Splits by value', '按数值划分'], ['O(n log n) worst case', '最坏 O(n log n)'], ['Sorting work happens in merge()', '排序工作在 merge() 里']], a: [0, 2, 3] },
+ { g: 'final', t: 'mcq', q: ['You need guaranteed O(n log n) and memory is plentiful. Pick:', '需要保证 O(n log n)，且内存充足。选：'], o: [['Merge sort', '归并排序'], ['Quick sort (first-element pivot)', '快排（首元素 pivot）'], ['Insertion sort', '插入排序'], ['Improved bubble sort', '改进冒泡']], a: 0 },
+ { g: 'gen', t: 'gen', make: () => { const arr = distinctInts(rint(6, 8), 1, 50); const R = T1.partition(arr), cut = R.steps[R.steps.length - 1].cut, last = R.steps.filter(s => s.swap).pop();
+   return { t: 'fill', q: [`partition() (pivot = first element) on <code>[${fmtArr(arr)}]</code>. Which index does it return?`, `partition()（pivot = 首元素）处理 <code>[${fmtArr(arr)}]</code>。返回哪个下标？`], a: [String(cut)],
+     e: [R.steps.map(s => s.swap ? `swap ${s.swap} → ${fmtArr(s.a)}` : `return ${s.cut}`).join('<br>'), R.steps.map(s => s.swap ? `交换 ${s.swap} → ${fmtArr(s.a)}` : `返回 ${s.cut}`).join('<br>')] }; } }
+]);
+
+</script>
+<script>
+/* ===== boot.js ===== */
+/* =====================================================================
+   BOOT — placeholder chapters from SITE.course.chapters, then start the app
+   ===================================================================== */
+(function () {
+  const order = SITE.course.chapters || [];
+  order.forEach(([id, num, t]) => { if (!SITE.chapters.find(c => c.id === id)) SITE.chapters.push({ id, num, t, soon: true, sections: [] }); });
+  const ix = id => { const i = order.findIndex(x => x[0] === id); return i < 0 ? 999 : i; };
+  SITE.chapters.sort((a, b) => ix(a.id) - ix(b.id));
+})();
+/* ---- boot ---- */
+$$('#langseg button').forEach(b => b.onclick = () => setLang(b.dataset.l));
+setLang(LS.get('lang', SITE.course.lang || 'zh'));
+const glSync = () => { document.documentElement.classList.toggle('nogl', !glOn()); $('#glbtn').classList.toggle('on', glOn()); };
+$('#glbtn').onclick = () => { LS.set('gloss', !glOn()); glSync(); if (glOn()) glossify($('#page')); };
+glSync();
+window.addEventListener('hashchange', render);
+render();
+
+</script>
+</body>
+</html>

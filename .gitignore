@@ -1,0 +1,14 @@
+# build output (rebuild with scripts/build.py)
+dist/
+# course slides and other source material: copyrighted, large — never commit
+*.pdf
+*.ppt
+*.pptx
+*.key
+# tooling
+__pycache__/
+*.pyc
+node_modules/
+shots/
+.DS_Store
+Thumbs.db

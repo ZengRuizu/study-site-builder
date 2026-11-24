@@ -1,0 +1,7 @@
+{
+  "title": "COURSE Review · Ch1",
+  "brand": "<b>COURSE</b> <span class=\"mr\">Review</span>",
+  "lang": "zh",
+  "output": "COURSE_Review.html",
+  "files": ["course.js", "glossary.js", "refreshers.js", "decks.js", "ch1.js"]
+}

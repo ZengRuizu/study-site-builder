@@ -1,0 +1,13 @@
+{
+  "title": "Sorting Algorithms · demo course",
+  "brand": "<b>Sorting</b> <span class=\"mr\">demo course</span>",
+  "lang": "both",
+  "output": "index.html",
+  "files": [
+    "../../addons/cs-algorithms/sim.js",
+    "../../addons/cs-algorithms/sortviz.js",
+    "../../addons/cs-algorithms/sheets.js",
+    "course.js", "glossary.js", "refreshers.js", "decks.js",
+    "paper.js", "ch1.js", "ch2.js"
+  ]
+}
