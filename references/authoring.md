@@ -30,7 +30,7 @@ SITE.chapter({ id: 'ch1', num: 'Ch1', t: ['Title', '标题'], sections: [
 ```
 - `html` is a function, evaluated at render time (so the language mode and widgets are fresh).
 - Chapter ids must match `SITE.course.chapters`. A chapter listed in the course but not built shows as "coming soon".
-- Route: `#/ch1/s1`. Built-in routes: `#/` home, `#/mistakes`, `#/mock`, `#/vocab`.
+- Route: `#/ch1/s1`. Built-in routes: `#/` home, `#/mistakes`, `#/mock`, `#/vocab`, `#/ai`, `#/save` (💾 Save & load).
 
 ## Widgets
 
@@ -98,7 +98,7 @@ SITE.bank('ch1', [
 ```
 - Optional on any question: `code` (shown highlighted), `html` (e.g. an SVG), `ecode` (code inside the explanation), `id`.
 - Fill answers are compared case-insensitively; spaces, brackets and commas are normalised; list every acceptable form.
-- **Ids are positional** (`ch1-1`, `ch1-2`, …) unless you set `id`. The mistake bank and stats are stored by id, so after students start using the page: **append new questions at the end of a bank** (or give explicit ids). Never insert in the middle or reorder.
+- **Ids are positional** (`ch1-1`, `ch1-2`, …) unless you set `id`. The mistake bank and stats are stored by id, so after students start using the page: **append new questions at the end of a bank** (or give explicit ids). Never insert in the middle or reorder. Same for widget record keys. See `references/design.md`.
 - Group names are free (`concept`, `trace`, `code`, `gen`, `final` …). `final` is the chapter test; `gen` holds generators.
 - Mock exam split per chapter: `SITE.course.mock = { quick: {ch1: 8, …}, full: {ch1: 15, …} }`, otherwise proportional to bank size.
 
@@ -124,6 +124,11 @@ Tag each past-paper question with its chapter (`c: 'ch3'`), so the banner can li
 
 - `SITE.GLOSS['word or phrase'] = '中文'` — lower case; phrases match before single words; matching is whole-word and skips code.
 - `SITE.RVX.name = () => RV(en, zh, html)` then `${SITE.RVX.name()}` inside a section. One refresher per assumed concept, reused wherever it is needed.
+
+## Storage, versions, save codes
+
+- Custom widgets store state only through `LS.get/set` (never raw `localStorage`), so it is namespaced, exported in save codes and merged on import. Give records a time `t` if they should merge “newest wins”.
+- `manifest.json`: `"version": "2.1"` and `{version}` in `title` / `brand` / `output`; `SITE.course.savePrefix` names save files. Format, merge rules and when to bump `SAVE_FMT`: `references/design.md`.
 
 ## Build
 

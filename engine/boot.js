@@ -8,6 +8,7 @@
   SITE.chapters.sort((a, b) => ix(a.id) - ix(b.id));
 })();
 /* ---- boot ---- */
+saveBoot();   // stamp stored progress with its format; upgrade older formats (references/design.md)
 $$('#langseg button').forEach(b => b.onclick = () => setLang(b.dataset.l));
 setLang(LS.get('lang', SITE.course.lang || 'zh'));
 const glSync = () => { document.documentElement.classList.toggle('nogl', !glOn()); $('#glbtn').classList.toggle('on', glOn()); };

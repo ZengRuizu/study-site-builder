@@ -71,7 +71,7 @@ def main():
         if errs:
             fails.append(f"JS error on load: {errs[:3]}")
         routes = pg.evaluate("SITE.chapters.flatMap(c => (c.sections||[]).map(s => c.id + '/' + s.id))")
-        routes = [""] + routes + ["mistakes", "mock", "vocab", "ai"]
+        routes = [""] + routes + ["mistakes", "mock", "vocab", "ai", "save"]
 
         # ---- question bank (static + generated) ----
         bank = pg.evaluate("""() => {
@@ -170,6 +170,37 @@ def main():
                 fails.append(f"{r or 'home'}: horizontal scroll on phone (width {sw}px > 375)")
             if shots:
                 m.screenshot(path=os.path.join(shots, (r or "home").replace('/', '_') + "_phone.png"))
+
+        # ---- save code: export → wipe → import must give back exactly the same data ----
+        sp = b.new_page()
+        sp.goto(url)
+        sp.wait_for_timeout(300)
+        rt = sp.evaluate("""async () => {
+          const bad = [], canon = x => Array.isArray(x) ? x.map(canon) : x && typeof x === 'object' ? Object.keys(x).sort().reduce((o, k) => (o[k] = canon(x[k]), o), {}) : x;
+          const same = (a, b) => JSON.stringify(canon(a)) === JSON.stringify(canon(b)), strip = d => { const o = Object.assign({}, d); delete o.lang; return o; };
+          const ids = SITE.allQs().filter(q => q.t !== 'gen').slice(0, 3).map(q => q.id), now = Date.now();
+          LS.set('stats', Object.fromEntries(ids.map((id, i) => [id, { c: i, w: 1, h: '01', t: now - i, g: 'B. “quoted” 中文' }])));
+          LS.set('wrong', ids.slice(0, 1)); LS.set('done', { 'x/s1': 1 }); LS.set('wtext', { t1: 'line 1\\nline 2 ✓ 中文' }); LS.set('wrec', { 'k:1': { n: 1, last: 2, of: 3, bp: 66, t: now } }); LS.set('lang', 'both');
+          const before = saveRead(), e = await saveExport();
+          if (!/^SSB-SAVE fmt\\d+ .* check [0-9a-f]{8}\\n[zj]/.test(e.code)) bad.push('save code: header line or payload missing');
+          if (!/_save_.*\\d{4}-\\d\\d-\\d\\d_\\d{4}_.+\\.txt$/.test(e.file)) bad.push('save file name lacks date/time/browser: ' + e.file);
+          saveWriteAll({ lang: 'en' });
+          let P; try { P = await saveParse(e.code); } catch (x) { bad.push('own save code rejected: ' + x.message); return bad; }
+          saveApply(P, 'replace');
+          if (!same(strip(saveRead()), strip(before))) bad.push('replace import does not restore the exported data');
+          if (LS.get('lang') !== 'en') bad.push('import overwrote a device preference (lang)');
+          saveApply(P, 'merge');
+          if (!same(strip(saveRead()), strip(before))) bad.push('merging a save into identical data changed it');
+          saveUndo();
+          if (!same(strip(saveRead()), strip(before))) bad.push('undo did not restore the data before the import');
+          const lines = e.code.split('\\n'), mid = lines[1].length >> 1;
+          for (const [name, txt] of [['changed character', lines[0] + '\\n' + lines[1].slice(0, mid) + (lines[1][mid] === 'A' ? 'B' : 'A') + lines[1].slice(mid + 1)], ['cut off', lines[0] + '\\n' + lines[1].slice(0, mid)]]) {
+            try { await saveParse(txt); bad.push('a ' + name + ' save code was accepted'); } catch (x) { if (x.message !== 'damaged') bad.push(name + ': wrong error ' + x.message); } }
+          try { await saveParse(e.code.replace(/\\n/, '\\n   ').replace(/(.{40})/, '$1')); } catch (x) { bad.push('save code with extra spaces/line breaks rejected'); }
+          saveWriteAll({}); localStorage.removeItem(savePrefix() + '_undo');
+          return bad;
+        }""")
+        fails += [f"save: {x}" for x in rt]
         b.close()
 
     print(json.dumps({"pages": len(routes), "fixed_questions": bank["fixed"], "generators": bank["gens"],

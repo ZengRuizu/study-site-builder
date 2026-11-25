@@ -1,7 +1,8 @@
 {
-  "title": "COURSE Review · Ch1",
-  "brand": "<b>COURSE</b> <span class=\"mr\">Review</span>",
+  "title": "COURSE Review v{version} · Ch1",
+  "brand": "<b>COURSE</b> <span class=\"mr\">Review</span> <small style=\"color:var(--muted);font-weight:500\">v{version}</small>",
   "lang": "zh",
-  "output": "COURSE_Review.html",
+  "version": "1.0",
+  "output": "COURSE_Review_v{version}.html",
   "files": ["course.js", "glossary.js", "refreshers.js", "decks.js", "ch1.js"]
 }

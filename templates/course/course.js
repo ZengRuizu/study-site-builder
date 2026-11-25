@@ -1,6 +1,7 @@
 /* Course configuration — read by the engine. Every user-visible text is a pair [English, 中文]. */
 SITE.course = {
   id: 'course-id',                 // storage namespace (letters/digits/-). NEVER change it after students start using the page
+  savePrefix: 'COURSE',            // start of save-file names (💾 Save & load)
   lang: 'zh',                      // default language mode: 'en' | 'zh' | 'both'
   title: ['COURSE Review — Chapters 1–N', 'COURSE 复习 —— 第 1–N 章'],
   // every chapter in the exam scope, in order. Chapters not built yet show as "coming soon".

@@ -23,6 +23,7 @@ Then check by eye (screenshots from `--shots`, or open the page):
 - [ ] Click Next on a step-through widget several times: the button stays at the same screen position.
 - [ ] Each section’s decks and quizzes only cover what has been taught so far.
 - [ ] Answer a few questions wrong, open 🤖 Hand over to AI and copy: the report lists them with the student’s answer and the correct one.
+- [ ] Updating a site: `course.id` unchanged, new questions only appended, `version` bumped in the manifest. Open the previous file, answer a question, then open the new file in the same browser: the record is still there. On 💾 Save & load, export, open in a fresh browser profile, import: the counts match (`verify.py` also tests the round trip).
 - [ ] Mark some answers wrong and look at the screenshot in greyscale: wrong cells must still stand out (dashed border / ✗ / line-through), not only by colour.
 
 If Playwright is unavailable: run `node --check` on the built file's scripts (build.py does this), open the page in a browser yourself if you can, and ask the student to open it and report anything broken.

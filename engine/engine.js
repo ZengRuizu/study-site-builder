@@ -230,6 +230,131 @@ function renderQuizList(container, list, opts = {}) {
 }
 
 /* =====================================================================
+   SAVE CODES — move progress between browsers / devices, and keep it across versions.
+   Rules and format: references/design.md. Same browser + newer file = nothing to do (same course.id).
+   ===================================================================== */
+const SAVE_FMT = 1;        // format of the stored data. Bump ONLY when the structure changes, and add SAVE_MIGRATE[old]
+const SAVE_MIGRATE = {};   // { n: data => data } turns format n into n+1 (data = { key: value } without the course prefix)
+const SAVE_KEEP = ['lang', 'gloss', 'budget'];   // device preferences: an import never overwrites them
+const savePrefix = () => (SITE.course.id || 'site') + ':';
+function saveRead() { const p = savePrefix(), out = {}; try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith(p)) { const n = k.slice(p.length); if (n === '_undo' || n === '_meta') continue; try { out[n] = JSON.parse(localStorage.getItem(k)); } catch (e) {} } } } catch (e) {} return out; }
+function saveWriteAll(data) { const p = savePrefix(), old = []; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith(p) && k !== p + '_undo' && k !== p + '_meta') old.push(k); }
+  old.forEach(k => localStorage.removeItem(k)); Object.entries(data).forEach(([k, v]) => localStorage.setItem(p + k, JSON.stringify(v))); }
+function saveBoot() {   // runs once at start: stamp the stored data with its format, upgrade older formats
+  const m = LS.get('_meta', null);
+  if (m && m.fmt > SAVE_FMT) { SITE.saveNewer = m; return; }     // written by a newer page: do not touch it
+  if (m && m.fmt < SAVE_FMT) { let d = saveRead(); for (let f = m.fmt; f < SAVE_FMT; f++) d = SAVE_MIGRATE[f](d); try { saveWriteAll(d); } catch (e) {} }
+  LS.set('_meta', { fmt: SAVE_FMT, site: SITE.version || '', t: Date.now() });   // no _meta yet = format 1 (the original structure)
+}
+function saveBrowser() { const u = navigator.userAgent;
+  const b = /Edg\//.test(u) ? 'Edge' : /OPR\//.test(u) ? 'Opera' : /SamsungBrowser/.test(u) ? 'Samsung' : /Firefox\//.test(u) ? 'Firefox' : /Chrome\//.test(u) ? 'Chrome' : /Safari\//.test(u) ? 'Safari' : 'Browser';
+  const v = (u.match(/(?:Edg|OPR|SamsungBrowser|Firefox|Chrome|Version)\/(\d+)/) || [])[1] || '';
+  const os = /Windows/.test(u) ? 'Windows' : /Android/.test(u) ? 'Android' : /iPhone|iPad|iPod/.test(u) ? 'iOS' : /Mac OS X/.test(u) ? 'macOS' : /Linux/.test(u) ? 'Linux' : 'OS';
+  return { b, v, os }; }
+function saveSum(d) { const st = d.stats || {}, wr = d.wrec || {}, ts = [...Object.values(st), ...Object.values(wr)].map(r => (r && r.t) || 0);
+  return { answered: Object.keys(st).length, attempts: Object.values(st).reduce((a, r) => a + ((r && r.c) || 0) + ((r && r.w) || 0), 0), wrong: (d.wrong || []).length, widgets: Object.keys(wr).length,
+    texts: Object.keys(d.wtext || {}).length + Object.keys(d.ucstext || {}).length, done: Object.keys(d.done || {}).length, vocab: Object.keys(d.vocab || {}).length, last: Math.max(0, ...ts) }; }
+function saveHash(s) { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return h.toString(16).padStart(8, '0'); }
+const saveB64 = u8 => { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); };
+const saveUnB64 = s => { const b = atob(s), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; };
+async function saveGz(u8, back) { const cs = new (back ? DecompressionStream : CompressionStream)('gzip'); return new Uint8Array(await new Response(new Blob([u8]).stream().pipeThrough(cs)).arrayBuffer()); }
+const pad2 = n => String(n).padStart(2, '0');
+function saveStamp(t) { const d = new Date(t), o = -d.getTimezoneOffset() / 60; return { day: `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`, hm: `${pad2(d.getHours())}:${pad2(d.getMinutes())}`, tz: 'UTC' + (o >= 0 ? '+' : '') + o }; }
+/* save code = line 1: readable header (ends with the checksum of line 2) · line 2: z<base64 gzip JSON> or j<base64 JSON> */
+async function saveExport() {
+  const data = saveRead(), now = Date.now(), br = saveBrowser(), sum = saveSum(data), C = SITE.course;
+  const P = { fmt: SAVE_FMT, id: C.id || 'site', title: C.title ? C.title[0] : '', site: SITE.version || '', at: now, tz: -new Date(now).getTimezoneOffset(), browser: br, data };
+  const bytes = new TextEncoder().encode(JSON.stringify(P));
+  let line; try { line = 'z' + saveB64(await saveGz(bytes)); } catch (e) { line = 'j' + saveB64(bytes); }
+  const st = saveStamp(now);
+  const head = `SSB-SAVE fmt${SAVE_FMT} · ${P.title}${P.site ? ' v' + P.site : ''} (${P.id}) · ${st.day} ${st.hm} ${st.tz} · ${br.b}${br.v ? ' ' + br.v : ''} / ${br.os} · ${sum.answered} answered · ${sum.wrong} mistakes · check ${saveHash(line)}`;
+  return { code: head + '\n' + line, P, sum,
+    file: `${C.savePrefix || P.id}_save${P.site ? '_v' + P.site : ''}_${st.day}_${st.hm.replace(':', '')}_${br.b}-${br.os}.txt` };
+}
+async function saveParse(text) {
+  const lines = String(text || '').replace(/\r/g, '').split('\n'), i = lines.findIndex(l => l.trim().startsWith('SSB-SAVE'));
+  if (i < 0) throw new Error('not-save');
+  const head = lines[i].trim(), line = lines.slice(i + 1).join('').replace(/\s+/g, '');
+  const ck = (head.match(/check ([0-9a-f]{8})/) || [])[1];
+  if (!ck || !line || saveHash(line) !== ck) throw new Error('damaged');
+  let P; try { const raw = saveUnB64(line.slice(1)); P = JSON.parse(new TextDecoder().decode(line[0] === 'z' ? await saveGz(raw, true) : raw)); } catch (e) { throw new Error('damaged'); }
+  if (!P || typeof P.data !== 'object') throw new Error('damaged');
+  if (P.fmt > SAVE_FMT) throw new Error('newer');
+  if (P.id !== (SITE.course.id || 'site')) { const e = new Error('other'); e.P = P; throw e; }
+  for (let f = P.fmt; f < SAVE_FMT; f++) P.data = SAVE_MIGRATE[f](P.data);
+  P.head = head; return P;
+}
+/* merge = keep the newest record of every question / widget, union of lists, longer text; device preferences stay */
+function saveMerge(cur, imp) {
+  const out = Object.assign({}, cur), obj = x => x && typeof x === 'object' && !Array.isArray(x);
+  const newer = (a, b) => (b && (b.t || 0) > ((a && a.t) || 0)) || (!a && b) ? b : a;
+  Object.entries(imp).forEach(([k, v]) => {
+    const c = cur[k];
+    if (c === undefined) { out[k] = v; return; }
+    if (SAVE_KEEP.includes(k) || k.startsWith('tm:')) return;
+    if (k === 'stats' || k === 'wrec' || k === 'vocab') { const o = Object.assign({}, c); Object.entries(v || {}).forEach(([id, r]) => { o[id] = newer(c[id], r); }); out[k] = o; return; }
+    if (k === 'wrong') { out[k] = [...new Set([...(c || []), ...(v || [])])]; return; }
+    if (k === 'mockbest') { out[k] = Math.max(+c || 0, +v || 0); return; }
+    const longer = (a, b) => (typeof a === 'string' && typeof b === 'string') ? (b.length > a.length ? b : a) : (a === undefined ? b : a);
+    if (obj(c) && obj(v)) { const o = Object.assign({}, c); Object.entries(v).forEach(([id, x]) => { o[id] = obj(o[id]) && obj(x) ? Object.assign({}, x, o[id], ...Object.keys(x).filter(f => typeof x[f] === 'string' && typeof o[id][f] === 'string' && x[f].length > o[id][f].length).map(f => ({ [f]: x[f] }))) : (o[id] && o[id].t !== undefined ? newer(o[id], x) : longer(o[id], x)); }); out[k] = o; return; }
+    if (Array.isArray(c) && Array.isArray(v)) { out[k] = [...new Set([...c, ...v])]; return; }
+  });
+  return out;
+}
+function saveApply(P, mode) {
+  const cur = saveRead(), p = savePrefix();
+  const next = mode === 'replace' ? Object.assign({}, P.data, ...SAVE_KEEP.filter(k => cur[k] !== undefined).map(k => ({ [k]: cur[k] }))) : saveMerge(cur, P.data);
+  try { localStorage.setItem(p + '_undo', JSON.stringify({ t: Date.now(), data: cur })); } catch (e) { throw new Error('full'); }
+  try { saveWriteAll(next); } catch (e) { try { saveWriteAll(cur); } catch (e2) {} throw new Error('full'); }   // all or nothing
+  LS.set('_meta', { fmt: SAVE_FMT, site: SITE.version || '', t: Date.now() });
+  return saveSum(next);
+}
+function saveUndo() { const u = LS.get('_undo', null); if (!u) return false; saveWriteAll(u.data); localStorage.removeItem(savePrefix() + '_undo'); return true; }
+function saveSumRows(a, b) { const f = t => t ? (() => { const s = saveStamp(t); return s.day + ' ' + s.hm; })() : '–';
+  const R = [[['Questions answered', '做过的题'], 'answered'], [['Attempts', '作答次数'], 'attempts'], [['In the mistake bank', '错题本'], 'wrong'], [['Practice widgets with a score', '有分数的练习组件'], 'widgets'], [['Written answers', '写过的答案'], 'texts'], [['Sections marked done', '标记完成的小节'], 'done'], [['Vocabulary words', '生词'], 'vocab']];
+  return R.map(([l, k]) => `<tr><td>${T(l[0], l[1])}</td><td>${a[k]}</td>${b ? `<td>${b[k]}</td>` : ''}</tr>`).join('') + `<tr><td>${T('Last activity', '最后一次学习')}</td><td>${f(a.last)}</td>${b ? `<td>${f(b.last)}</td>` : ''}</tr>`; }
+function renderSave(page) {
+  const sum = saveSum(saveRead()), undo = LS.get('_undo', null);
+  page.innerHTML = `<h1>💾 ${T('Save & load progress', '存档与读档')}</h1>
+  ${SITE.saveNewer ? BOX('warn', `This browser’s progress was written by a newer version (v${esc(SITE.saveNewer.site || '?')}). Open the newest file — this older one may not read everything.`, `这个浏览器里的进度是更新的版本（v${esc(SITE.saveNewer.site || '?')}）写入的。请打开最新的文件——这个旧文件可能读不全。`) : ''}
+  ${P('Your progress lives in this browser, not in the file. Opening a newer version of this page <b>in the same browser</b> keeps it automatically — nothing to do. Use this page only to move progress to <b>another browser or device</b>, or to keep a backup.', '进度存在浏览器里，不在文件里。<b>在同一个浏览器</b>打开新版本的网页会自动继承——什么都不用做。只有要把进度搬到<b>别的浏览器或设备</b>、或想留个备份时才用这一页。')}
+  <div class="card"><b>① ${T('Export from this browser', '从这个浏览器导出')}</b>
+    <table class="t" style="margin:8px 0"><tr><th></th><th>${T('This browser', '这个浏览器')}</th></tr>${saveSumRows(sum)}</table>
+    <div class="row"><button class="btn pri" id="svcopy">📋 ${T('Copy save code', '复制存档码')}</button><button class="btn" id="svfile">⬇️ ${T('Download save file', '下载存档文件')}</button><span id="svmsg" style="font-size:14px"></span></div>
+    <details class="rv"><summary>${T('Show the save code', '显示存档码')}</summary><div class="rvb"><textarea id="svtext" readonly style="width:100%;min-height:110px;font-family:var(--mono);font-size:12px"></textarea></div></details></div>
+  <div class="card"><b>② ${T('Import into this browser', '导入到这个浏览器')}</b>
+    <textarea id="svin" class="in" style="width:100%;min-height:90px;font-family:var(--mono);font-size:12px;margin-top:8px" placeholder="Paste the save code here · 在这里粘贴存档码"></textarea>
+    <div class="row"><label class="btn sm" style="cursor:pointer">📂 ${T('Open a save file', '打开存档文件')}<input type="file" id="svpick" accept=".txt,text/plain" style="display:none"></label><button class="btn pri" id="svread">${T('Check the save', '检查存档')}</button></div>
+    <div id="svprev"></div></div>
+  ${undo ? `<div class="card"><b>↩️ ${T('Undo the last import', '撤销上次导入')}</b> <span style="font-size:13px;color:var(--muted)">(${saveStamp(undo.t).day} ${saveStamp(undo.t).hm})</span> <button class="btn sm" id="svundo">${T('Restore what was here before', '恢复导入前的数据')}</button></div>` : ''}
+  ${BOX('note', 'Nothing is uploaded. The save code is your own data; it carries a checksum, so a code that was cut off in a chat app is refused instead of half-imported.', '不会上传任何东西。存档码就是你自己的数据；它带校验码，被聊天软件截断的存档码会被拒绝，而不会只导入一半。')}`;
+  let exp = null; const msg = $('#svmsg', page), get = async () => exp || (exp = await saveExport());
+  $('details', page).ontoggle = async () => { $('#svtext', page).value = (await get()).code; };
+  $('#svcopy', page).onclick = async () => { const e = await get(); try { await navigator.clipboard.writeText(e.code); msg.innerHTML = `<span class="tag-ok">✓ ${T('Copied. Paste it on page ② of the other browser or device.', '已复制。到另一个浏览器或设备的 ② 里粘贴。')}</span>`; }
+    catch (x) { const d = $('details', page); d.open = true; const t = $('#svtext', page); t.value = e.code; t.focus(); t.select(); msg.innerHTML = `<span class="tag-no">${T('Automatic copy was blocked — the code is selected below, press Ctrl+C.', '浏览器拦截了自动复制——存档码已在下面全选，按 Ctrl+C。')}</span>`; } };
+  $('#svfile', page).onclick = async () => { const e = await get(), a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([e.code], { type: 'text/plain' })); a.download = e.file; document.body.appendChild(a); a.click(); a.remove();
+    msg.innerHTML = `<span class="tag-ok">✓ ${esc(e.file)}</span>`; };
+  $('#svpick', page).onchange = async ev => { const f = ev.target.files[0]; if (f) { $('#svin', page).value = await f.text(); $('#svread', page).click(); } };
+  const prev = $('#svprev', page);
+  $('#svread', page).onclick = async () => {
+    let P; try { P = await saveParse($('#svin', page).value); } catch (e) {
+      const why = { 'not-save': ['This is not a save code (it must start with “SSB-SAVE”).', '这不是存档码（必须以 “SSB-SAVE” 开头）。'], damaged: ['The code is damaged or incomplete (checksum does not match). Copy it again in one piece, or use the save file.', '存档码损坏或不完整（校验码不符）。请完整地重新复制，或改用存档文件。'],
+        newer: ['This save was made by a newer version of the page. Open the newest file and import there.', '这份存档来自更新版本的网页。请打开最新的文件再导入。'], other: [`This save belongs to another site (${esc((e.P && (e.P.title || e.P.id)) || '?')}).`, `这份存档属于另一个网站（${esc((e.P && (e.P.title || e.P.id)) || '?')}）。`] }[e.message] || ['Could not read the save.', '无法读取存档。'];
+      prev.innerHTML = `<div class="warn" style="margin-top:8px">✗ ${T(why[0], why[1])}</div>`; return; }
+    const a = saveSum(P.data), st = saveStamp(P.at), cur = saveSum(saveRead());
+    prev.innerHTML = `<div class="tip" style="margin-top:8px"><b>✓ ${T('Valid save', '存档有效')}</b> — ${T('exported', '导出于')} ${st.day} ${st.hm} ${st.tz} · ${esc(P.browser.b)} ${esc(P.browser.v)} / ${esc(P.browser.os)} · ${T('page version', '网页版本')} ${esc(P.site ? 'v' + P.site : '–')}</div>
+      <table class="t"><tr><th></th><th>${T('In the save', '存档里')}</th><th>${T('This browser now', '这个浏览器现在')}</th></tr>${saveSumRows(a, cur)}</table>
+      <div class="row"><label style="font-size:14px"><input type="radio" name="svmode" value="merge" checked> <b>${T('Merge', '合并')}</b> — ${T('keep the newer record of each question; nothing is lost (recommended)', '每道题保留较新的记录；什么都不丢（推荐）')}</label></div>
+      <div class="row"><label style="font-size:14px"><input type="radio" name="svmode" value="replace"> <b>${T('Replace', '覆盖')}</b> — ${T('this browser becomes exactly the save', '这个浏览器变成和存档完全一样')}</label></div>
+      <div class="row"><button class="btn pri" id="svgo">${T('Import now', '确认导入')}</button><span id="svdone" style="font-size:14px"></span></div>`;
+    $('#svgo', prev).onclick = () => { const mode = ($('input[name="svmode"]:checked', prev) || {}).value || 'merge';
+      try { const s = saveApply(P, mode); $('#svdone', prev).innerHTML = `<span class="tag-ok">✓ ${T(`Imported: ${s.answered} questions, ${s.wrong} in the mistake bank. You can undo below.`, `已导入：${s.answered} 道题，错题本 ${s.wrong} 道。下方可以撤销。`)}</span>`; renderSide('save'); setTimeout(() => renderSave(page), 900); }
+      catch (e) { $('#svdone', prev).innerHTML = `<span class="tag-no">✗ ${T('Browser storage is full or blocked — nothing was changed.', '浏览器存储已满或被禁用——数据没有任何改动。')}</span>`; } };
+  };
+  const ub = $('#svundo', page); if (ub) ub.onclick = () => { saveUndo(); renderSide('save'); renderSave(page); };
+}
+
+/* =====================================================================
    ROUTER + RENDER
    routes:  #/              home
             #/ch1/s2        section
@@ -237,6 +362,7 @@ function renderQuizList(container, list, opts = {}) {
             #/mock          mock exam
             #/vocab         vocabulary list
             #/ai            hand-over report for an AI tutor
+            #/save          save code: export / import progress (other browser or device)
    ===================================================================== */
 function sectionKey(ch, s) { return ch.id + '/' + s.id; }
 function flatSections() { const out = []; SITE.chapters.forEach(ch => (ch.sections || []).forEach(s => out.push({ ch, s }))); return out; }
@@ -279,7 +405,7 @@ function renderSide(curKey) {
     h += `</div></div>`;
   });
   const nw = LS.get('wrong', []).length;
-  h += `<div class="extra"><a class="sec ${curKey === 'mistakes' ? 'cur' : ''}" href="#/mistakes">📕 ${T('Mistake bank', '错题本')} (${nw})</a><a class="sec ${curKey === 'mock' ? 'cur' : ''}" href="#/mock">📝 ${T('Mock exam', '模拟考')}</a><a class="sec ${curKey === 'vocab' ? 'cur' : ''}" href="#/vocab">📒 ${T('Vocabulary list', '生词本')} (<span id="vocabcount">${Object.keys(LS.get('vocab', {})).length}</span>)</a><a class="sec ${curKey === 'ai' ? 'cur' : ''}" href="#/ai">🤖 ${T('Hand over to AI', '交给 AI')}</a></div>`;
+  h += `<div class="extra"><a class="sec ${curKey === 'mistakes' ? 'cur' : ''}" href="#/mistakes">📕 ${T('Mistake bank', '错题本')} (${nw})</a><a class="sec ${curKey === 'mock' ? 'cur' : ''}" href="#/mock">📝 ${T('Mock exam', '模拟考')}</a><a class="sec ${curKey === 'vocab' ? 'cur' : ''}" href="#/vocab">📒 ${T('Vocabulary list', '生词本')} (<span id="vocabcount">${Object.keys(LS.get('vocab', {})).length}</span>)</a><a class="sec ${curKey === 'ai' ? 'cur' : ''}" href="#/ai">🤖 ${T('Hand over to AI', '交给 AI')}</a><a class="sec ${curKey === 'save' ? 'cur' : ''}" href="#/save">💾 ${T('Save & load', '存档与读档')}</a></div>`;
   const side = $('#side'); side.innerHTML = h;
   $$('.grp .ch', side).forEach(b => b.onclick = () => {
     const g = b.parentElement, ch = SITE.chapters.find(c => c.id === g.dataset.ch);
@@ -307,6 +433,7 @@ function render() {
   if (hash === 'vocab') { renderSide('vocab'); renderVocab(page); window.scrollTo(0, 0); return; }
   if (hash === 'mock') { renderSide('mock'); renderMock(page); window.scrollTo(0, 0); return; }
   if (hash === 'ai') { renderSide('ai'); renderAI(page); window.scrollTo(0, 0); return; }
+  if (hash === 'save') { renderSide('save'); renderSave(page); window.scrollTo(0, 0); return; }
   const flat = flatSections();
   const idx = flat.findIndex(x => sectionKey(x.ch, x.s) === hash);
   if (idx < 0) { renderSide('home'); renderHome(page); window.scrollTo(0, 0); return; }
@@ -343,7 +470,7 @@ function aiReport() {
   const tally = qs => { const o = { n: qs.length, tried: 0, mastered: 0, review: 0, c: 0, w: 0 }; qs.forEach(q => { const r = S[q.id]; if (!r || !(r.c + r.w)) return; o.tried++; o.c += r.c; o.w += r.w; qMastered(r) ? o.mastered++ : o.review++; }); return o; };
   const L = [];
   L.push(`# Study handoff — ${C.title ? C.title[0] : 'study site'}`);
-  L.push(`Generated ${now.toLocaleString()} · site id \`${C.id || 'site'}\` · hours the student says are left: ${typeof focusBudget === 'function' ? focusBudget() : '?'}`);
+  L.push(`Generated ${now.toLocaleString()} · site id \`${C.id || 'site'}\`${SITE.version ? ' · page version v' + SITE.version : ''} · hours the student says are left: ${typeof focusBudget === 'function' ? focusBudget() : '?'}`);
   L.push('', '## Instructions for the AI tutor', C.ai ? C.ai : `You are taking over as this student's tutor. The data below was exported from their interactive study page (they cannot see it laid out like this). Using it:
 1. Find the weakest topics, weighted by how many exam marks each is worth (see "Exam focus").
 2. For the wrong answers listed below, compare the student's answer with the correct one and name the misconception behind it — not just the right answer.
@@ -723,13 +850,16 @@ SITE.homeHTML = () => {
     return `<a class="chcard" href="${first ? '#/' + sectionKey(ch, first) : '#/'}"><div class="n">${ch.num}${ch.soon ? ' · ' + T('coming soon', '制作中') : ''}</div><b>${T(ch.t[0], ch.t[1])}</b><div style="font-size:13px;color:var(--muted)">${(ch.sections || []).length} ${T('sections', '节')} · ${(SITE.banks[ch.id] || []).length} ${T('questions', '题')}</div><div class="bar"><i style="width:${p}%"></i></div></a>`;
   }).join('');
   const t = C.title || ['Study site', '复习网站'];
-  let h = `<div class="hero"><h1>${T(t[0], t[1])}</h1><div>${T('Interactive notes, visualizers and ' + nQ + ' practice questions built from the lecture slides.', '根据课件制作的交互式笔记、可视化工具和 ' + nQ + ' 道练习题。')}</div></div>
+  const fresh = !Object.keys(stats()).length && !Object.keys(done()).length && !Object.keys(LS.get('wrec', {})).length;
+  let h = (SITE.saveNewer ? BOX('warn', `This browser’s progress was written by a newer version (v${esc(SITE.saveNewer.site || '?')}). Open the newest file.`, `这个浏览器里的进度是更新的版本（v${esc(SITE.saveNewer.site || '?')}）写入的。请打开最新的文件。`) : '')
+    + (fresh ? BOX('note', 'First time in this browser? If you already studied with this page in another browser or on another device, bring your progress here: <a href="#/save">💾 Save & load</a>. (A newer version opened in the same browser keeps your progress by itself.)', '第一次在这个浏览器打开？如果你在别的浏览器或设备上用过这个网页，可以把进度搬过来：<a href="#/save">💾 存档与读档</a>。（在同一个浏览器打开新版本会自动继承进度。）') : '')
+    + `<div class="hero"><h1>${T(t[0], t[1])}</h1><div>${T('Interactive notes, visualizers and ' + nQ + ' practice questions built from the lecture slides.', '根据课件制作的交互式笔记、可视化工具和 ' + nQ + ' 道练习题。')}</div></div>
   <div class="card"><b>${T('How to use this page', '怎么用这个网页')}</b>${L([
     ['Switch language top-right: <b>EN</b> (exam language), <b>中文</b>, or <b>双语</b> (both). In EN, tap a dotted word for its Chinese meaning; it is saved to the <b>📒 vocabulary list</b>.', '右上角切换语言：<b>EN</b>（考试语言）、<b>中文</b>、<b>双语</b>。EN 模式下点带虚线的词看中文，会自动存进 <b>📒 生词本</b>。'],
     ['Each section = picture & hands-on widget → short notes → “Check yourself” questions. Do the questions; reading alone will not stick.', '每节 = 图和交互 → 简短笔记 → “自测”题。一定要做题，光看记不住。'],
     ['Not sure? Press <b>🤷 Don’t know</b> instead of guessing — it shows the answer and saves the question to the <b>📕 mistake bank</b>.', '不确定就按 <b>🤷 不会</b>，别蒙——会显示答案并把题放进 <b>📕 错题本</b>。'],
     ['🎲 questions are randomly generated — press “New question” for unlimited practice. The last section of each chapter is a test with NEW questions.', '带 🎲 的题是随机生成的——点“换一题”可以无限练。每章最后一节是全新题目的测试。'],
-    ['Progress is saved in this browser only. Want help? <a href="#/ai">🤖 Hand over to AI</a> copies a report of your results that any AI tutor can analyse. Keyboard: ← / → for previous / next section.', '进度只保存在当前浏览器。需要帮忙？<a href="#/ai">🤖 交给 AI</a> 会把你的做题情况复制成一份报告，任何 AI 都能据此帮你分析。键盘 ← / → 切换上一节/下一节。']])}</div>
+    ['Progress is saved in this browser and carries over to newer versions of this file opened in the same browser. Another browser or device: <a href="#/save">💾 Save & load</a>. Want help? <a href="#/ai">🤖 Hand over to AI</a> copies a report of your results that any AI tutor can analyse. Keyboard: ← / → for previous / next section.', '进度保存在当前浏览器里，在同一个浏览器打开新版本的文件会自动继承。换浏览器或设备：<a href="#/save">💾 存档与读档</a>。需要帮忙？<a href="#/ai">🤖 交给 AI</a> 会把你的做题情况复制成一份报告，任何 AI 都能据此帮你分析。键盘 ← / → 切换上一节/下一节。']])}</div>
   ${focusTable()}
   <h2>${T('Chapters', '章节')}</h2><div class="chgrid">${cards}</div>
   ${nW ? `<div class="exam" style="margin-top:14px"><b class="h">${T('Mistake bank', '错题本')}</b>${T(`You have <b>${nW}</b> question(s) to redo.`, `你有 <b>${nW}</b> 道错题待重做。`)} <a href="#/mistakes">${T('Go →', '去做 →')}</a></div>` : ''}`;

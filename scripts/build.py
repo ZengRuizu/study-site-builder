@@ -9,9 +9,11 @@ The course folder must contain manifest.json:
       "title":  "Sorting Algorithms · demo course", # browser tab title (plain text)
       "brand":  "<b>Sorting</b> demo course",      # top-left label (HTML allowed)
       "lang":   "zh",                              # default language: en | zh | both
-      "output": "index.html",                      # file name written to <course-folder>/dist/
+      "version": "1.0",                            # page version major.minor; {version} in title/brand/output is replaced
+      "output": "index.html",                      # file name written to <course-folder>/dist/, e.g. "COURSE_Review_v{version}.html"
       "files":  ["course.js", "glossary.js", ...]  # course JS files, in load order
     }
+Versioning rules (bump on every delivery, never reuse a number): references/design.md.
 
 Only the Python standard library is needed. If `node` is installed, the combined
 JavaScript is syntax-checked and the build fails on a syntax error.
@@ -50,10 +52,19 @@ def main():
         if key not in man:
             sys.exit(f"manifest.json is missing '{key}'")
 
+    ver = str(man.get("version", ""))
+    if ver and not re.fullmatch(r"\d+\.\d+", ver):
+        sys.exit(f"manifest.json: version must look like 2.1 (major.minor), got {ver!r}")
+    for key in ("title", "brand", "output"):
+        if "{version}" in man[key] and not ver:
+            sys.exit(f"manifest.json: {key} uses {{version}} but 'version' is missing")
+        man[key] = man[key].replace("{version}", ver)
+
     head = read(os.path.join(ENGINE, "head.html"))
     head = head.replace("{{TITLE}}", man["title"]).replace("{{BRAND}}", man["brand"]).replace("{{LANG}}", man.get("lang", "zh"))
 
     blocks = [("engine.js", read(os.path.join(ENGINE, "engine.js")))]
+    blocks.append(("version", f"SITE.version = {json.dumps(ver)};"))
     for name in man["files"]:
         path = os.path.join(course, name)
         if not os.path.exists(path):

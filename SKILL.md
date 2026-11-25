@@ -47,15 +47,15 @@ Optional add-ons live in `addons/` (e.g. `addons/cs-algorithms/`: sorting visual
 
 Files (copy `templates/course/` to `<course folder>/<Site>_src/` or similar):
 ```
-manifest.json   title, brand, default lang, output name, ordered file list
-course.js       SITE.course: id (storage namespace — never change later), chapters, plan, notes, credits, mock split
+manifest.json   title, brand, default lang, version (major.minor), output name (use {version}), ordered file list
+course.js       SITE.course: id (storage namespace — never change later), savePrefix, chapters, plan, notes, credits, mock split
 glossary.js     SITE.GLOSS: english → 中文
 refreshers.js   SITE.RVX.*: collapsed background-knowledge boxes
 decks.js        DECK.bucket / flash / cloze / judge: data for built-in practice widgets
 ch1.js …        one file per chapter: SITE.chapter({...}), its custom widgets, SITE.bank('ch1', [...])
 ```
 Build: `python3 scripts/build.py <course folder>` → `<course folder>/dist/<output>.html`.
-API, widget catalog and question schema: `references/authoring.md`. Teaching and question design rules: `references/pedagogy.md`.
+API, widget catalog and question schema: `references/authoring.md`. Teaching and question design rules: `references/pedagogy.md`. Storage, save codes and version rules: `references/design.md` — read it before changing anything stored, any question id, or delivering an update.
 
 ## 4. Non-negotiable requirements
 
@@ -74,7 +74,7 @@ API, widget catalog and question schema: `references/authoring.md`. Teaching and
 13. **Refreshers are low-key**: collapsed by default, short, never in the way of the main path.
 14. **Follow the lecturer**, flag slide errors, verify every answer by running code.
 15. **Phone-friendly**: no horizontal scrolling at 375 px (wide tables and code scroll inside their own box).
-16. **Progress is local and namespaced** (`course.id`), so several study sites on one computer do not overwrite each other.
+16. **Progress is local and namespaced** (`course.id`), so several study sites on one computer do not overwrite each other. It must survive updates: `course.id` never changes, new questions are only appended (ids are positional), and the engine's 💾 Save & load page (`#/save`) moves progress to another browser or device with a checksummed save code. Rules: `references/design.md`.
 17. **Past papers → blueprint, verified keys, same-format answer-sheet drills, a real-format mock, and an effort banner before every chapter** (how many hours, what is examined, what to skip — from counted marks). Tell the student honestly when a topic they worked on earned 0 marks in the papers.
 18. **Progress that survives**: every question shows its own history (last results as dots, right/wrong counts, when) and a state — new / to review / mastered (last two attempts right); each quiz header counts the three states and offers “only not mastered”; practice widgets remember last and best score. Built into the engine — custom widgets with a score use `wRec(key, got, n)` + `wRecHTML(key)`.
 19. **No content from later sections**: a section’s flashcards, sort-it games and quizzes only use what has been taught up to that point. Put mixed review decks at the end of the later chapter.
@@ -82,6 +82,7 @@ API, widget catalog and question schema: `references/authoring.md`. Teaching and
 21. **Right/wrong must be readable without colour vision**: right = blue, wrong = red-orange (never green vs red), and every wrong mark also differs in shape — dashed thicker border, ✗ / line-through — so it is visible in any colour mode. The engine’s `--ok` / `--bad` variables and option/blank styles do this; custom widgets must use those variables and the same border styles.
 22. **Hand-over to an AI tutor**: the page has a 🤖 “Hand over to AI” page (`#/ai`, linked in the sidebar, home and mistake bank) that copies one Markdown report: instructions for the AI, exam focus, progress per chapter and per question group, answer-sheet scores, and every not-mastered question with the correct answer and **what the student answered**. Nothing is uploaded. Engine built-in; set `SITE.course.ai` to replace the default instructions. When a student pastes such a report to you, analyse misconceptions from their wrong answers, weight by exam marks, and give an ordered plan plus a few new questions.
 23. **Editable later**: content lives in small source files; anyone can change a question and rebuild.
+24. **Versioned files**: `manifest.json` `version` is `major.minor` and appears in the file name and the top-left brand. Bump it on every delivery — +0.1 for a fix or small feature, +1 for new chapters, past papers or a changed structure — and move older files to `old_versions/`.
 
 ## 5. Quality gate (every build)
 
@@ -93,7 +94,8 @@ python3 scripts/verify.py <course folder>/dist/<output>.html --shots /tmp/shots
 
 ## 6. Deliver
 
-- Put the built HTML where the student asked, plus the source folder next to it. Say how to rebuild.
+- Put the built HTML where the student asked, plus the source folder next to it, with the new version number in its name (older versions into `old_versions/`). Say how to rebuild.
+- Tell the student (and anyone they share it with): opening the new file **in the same browser** keeps all progress; for another browser or device use 💾 Save & load.
 - Tell the student in one or two lines what is new, what to do first, and any slide errors you found.
 - Do not copy slide PDFs into any repository (copyright and size). Paraphrase slides; short code examples are fine.
 - If the student asked for version control: give them the git commands (explain each command and option) and let them commit and push themselves, with their own identity. Do not add AI co-author trailers unless they ask.
