@@ -6,7 +6,7 @@ All course files are plain JavaScript run in order (manifest `files`) inside one
 
 | Helper | Output |
 |---|---|
-| `T(en, zh)` | inline text; shows en / zh / both depending on the mode |
+| `T(en, zh)` | text; shows en / zh / both depending on the mode. In 双语 mode, text over ~40 characters (or with block markup) gets class `blk`: the Chinese starts on its own line with a side bar, so the reader can find it at a glance. Short labels and headings stay inline. |
 | `P(en, zh)` | paragraph |
 | `L([[en, zh], …], ordered?)` | list; an item can also be raw HTML |
 | `BOX(kind, en, zh)` | callout; kind = `note` · `tip` · `warn` (common mistake) · `exam` (exam focus) |

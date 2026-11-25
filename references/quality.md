@@ -11,6 +11,7 @@ Run `scripts/verify.py` first. It checks automatically:
 Then check by eye (screenshots from `--shots`, or open the page):
 - [ ] Every section you changed: looks clean on desktop and phone; nothing overlaps; diagrams readable at phone width.
 - [ ] Switch EN → 中文 → 双语 on a page with widgets and a quiz: all labels switch, no untranslated English in 中文 mode except technical terms.
+- [ ] In 双语 mode no paragraph, note, card or widget message runs the Chinese on in the same line after the English: the Chinese of every long text starts on its own line (side bar).
 - [ ] Answer one question right, one wrong, one "Don't know": feedback and explanation appear; the wrong ones appear in Mistakes.
 - [ ] Each widget you added: press every button; reset works; edge input (empty, very large, duplicates) does not break it.
 - [ ] Every numeric answer and code output was produced by running code, not by hand.

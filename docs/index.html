@@ -35,6 +35,9 @@ html.lang-both p.zh, html.lang-both div.zh{color:var(--muted);border-left:3px so
 html.lang-both span.zh{color:var(--muted);margin-left:.35em}
 html.lang-both li > span.zh, html.lang-both .opt span.zh, html.lang-both .qtext span.zh, html.lang-both .exp span.zh, html.lang-both td > span.zh, html.lang-both .card span.zh.blk{display:block;margin-left:0}
 html.lang-both h1 span.zh, html.lang-both h2 span.zh, html.lang-both h3 span.zh{font-size:.8em}
+html.lang-both span.zh.blk{display:block;margin:.3em 0 0;padding-left:10px;border-left:3px solid var(--line)} /* long text: Chinese on its own line, marked by a bar */
+html.lang-both :is(h1,h2,h3,h4,th,.wt,.crumb,.pill) span.zh.blk{display:inline;margin:0 0 0 .35em;padding:0;border:0}
+html.lang-both nav.side span.zh{display:block;margin:1px 0 0;font-size:.88em;border:0;padding:0}
 /* ---------- layout ---------- */
 .top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;padding:10px 18px;background:var(--panel);border-bottom:1px solid var(--line)}
 .top .brand{font-weight:700;letter-spacing:.2px;white-space:nowrap}
@@ -330,7 +333,10 @@ const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 function attr(s) { return esc(s).replace(/"/g, '&quot;'); }
 /** inline bilingual text */
-function T(en, zh) { return `<span class="en">${en}</span><span class="zh">${zh == null ? en : zh}</span>`; }
+/* Long text (over ~40 characters, or containing block markup) gets class "blk": in 双语 mode the Chinese then starts on its own line
+   instead of running on after the English sentence. Short labels stay inline. */
+function T(en, zh) { const s = String(en), b = s.replace(/<[^>]+>/g, '').replace(/&[#a-z0-9]+;/gi, 'x').length > 40 || /<(br|p|ul|ol|div|table)\b/i.test(s) ? ' blk' : '';
+  return `<span class="en${b}">${en}</span><span class="zh${b}">${zh == null ? en : zh}</span>`; }
 /** paragraph bilingual */
 function P(en, zh) { return `<p class="en">${en}</p><p class="zh">${zh}</p>`; }
 /** list of bilingual items */

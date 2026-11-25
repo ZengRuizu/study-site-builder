@@ -22,7 +22,10 @@ const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 function attr(s) { return esc(s).replace(/"/g, '&quot;'); }
 /** inline bilingual text */
-function T(en, zh) { return `<span class="en">${en}</span><span class="zh">${zh == null ? en : zh}</span>`; }
+/* Long text (over ~40 characters, or containing block markup) gets class "blk": in 双语 mode the Chinese then starts on its own line
+   instead of running on after the English sentence. Short labels stay inline. */
+function T(en, zh) { const s = String(en), b = s.replace(/<[^>]+>/g, '').replace(/&[#a-z0-9]+;/gi, 'x').length > 40 || /<(br|p|ul|ol|div|table)\b/i.test(s) ? ' blk' : '';
+  return `<span class="en${b}">${en}</span><span class="zh${b}">${zh == null ? en : zh}</span>`; }
 /** paragraph bilingual */
 function P(en, zh) { return `<p class="en">${en}</p><p class="zh">${zh}</p>`; }
 /** list of bilingual items */
